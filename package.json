@@ -1,0 +1,19 @@
+{
+  "name": "webfragments-poc",
+  "private": true,
+  "version": "1.0.0",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "clean": "pnpm -r run clean",
+    "build": "pnpm -r run build",
+    "dev": "pnpm --filter @webfragments/main-app run dev",
+    "reset": "pnpm run clean && pnpm run build",
+    "start:fresh": "pnpm run reset && pnpm run dev",
+    "reset:full": "rm -rf node_modules packages/*/node_modules packages/*/dist && pnpm install && pnpm run build"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

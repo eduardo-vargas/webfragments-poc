@@ -1,0 +1,45 @@
+{
+  "name": "@webfragments/core",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./elements": {
+      "types": "./dist/elements.d.ts",
+      "import": "./dist/elements.js"
+    },
+    "./dist/assets/style.css": "./dist/assets/style.css"
+  },
+  "scripts": {
+    "dev": "vite build --watch",
+    "build": "pnpm run clean && vite build",
+    "clean": "rm -rf dist",
+    "serve:party-button": "vite serve src/fragments/party-button/dev",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "canvas-confetti": "^1.9.2"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "@types/canvas-confetti": "^1.6.4",
+    "@types/node": "^20.0.0",
+    "@vitejs/plugin-react": "^4.2.1",
+    "typescript": "^5.0.0",
+    "vite": "^5.0.0",
+    "vite-plugin-dts": "^3.7.3"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  }
+} 
