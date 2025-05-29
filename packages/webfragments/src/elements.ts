@@ -1,11 +1,16 @@
-import React from 'react';
+import React, { ReactNode, ComponentType } from 'react';
 import { createRoot } from 'react-dom/client';
 
 // Global registry for fragments
-const fragmentRegistry = new Map();
+const fragmentRegistry = new Map<string, ComponentType<any>>();
 
-export function registerFragment(id: string, component: React.ReactNode) {
-  fragmentRegistry.set(id, component);
+export function createFragment<T = {}>(id: string, Component: ComponentType<T>): ComponentType<T> {
+  fragmentRegistry.set(id, Component);
+  return Component;
+}
+
+export function registerFragment<T = {}>(id: string, Component: ComponentType<T>): void {
+  fragmentRegistry.set(id, Component);
 }
 
 // Web Fragment Custom Elements
@@ -30,7 +35,7 @@ export class WebFragment extends HTMLElement {
     }
   }
 
-  private renderContent(content: React.ReactNode) {
+  private renderContent(Component: ComponentType<any> | ReactNode) {
     if (!this.root) {
       const container = document.createElement('div');
       container.id = `fragment-${this.getAttribute('fragment-id')}`;
@@ -38,13 +43,16 @@ export class WebFragment extends HTMLElement {
       this.root = createRoot(container);
     }
 
-    this.root.render(
-      React.createElement(
-        React.StrictMode,
-        null,
-        content
-      )
+    // If content is a component type, wrap it in a React element
+    const element = React.createElement(
+      React.StrictMode,
+      null,
+      typeof Component === 'function' 
+        ? React.createElement(Component)
+        : Component
     );
+
+    this.root.render(element);
   }
 
   private renderLoading() {
@@ -82,9 +90,9 @@ export class WebFragment extends HTMLElement {
     }
 
     // Check if we have a local component registered
-    const localComponent = fragmentRegistry.get(fragmentId);
-    if (localComponent) {
-      this.renderContent(localComponent);
+    const Component = fragmentRegistry.get(fragmentId);
+    if (Component) {
+      this.renderContent(Component);
     } else if (src) {
       // Show loading state before fetching
       this.renderLoading();

@@ -17,7 +17,7 @@ const styles = {
   }
 } as const;
 
-export const PartyButton: React.FC = () => {
+const PartyButton: React.FC = () => {
   console.log('[PartyButton] Component mounted');
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -57,4 +57,6 @@ export const PartyButton: React.FC = () => {
     onClick: handleClick,
     children: 'Hello world! 👋🏼'
   });
-}; 
+};
+
+export default PartyButton; 

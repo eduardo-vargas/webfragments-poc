@@ -10,13 +10,20 @@ const __dirname = dirname(__filename);
 export default defineConfig({
   plugins: [
     react(),
-    dts({ rollupTypes: true })
+    dts({ 
+      rollupTypes: true,
+      include: ['src/**/*.ts', 'src/**/*.tsx'],
+      exclude: ['src/**/dev/**/*'],
+      outDir: 'dist/types'
+    })
   ],
   build: {
     lib: {
       entry: {
         index: resolve(__dirname, 'src/index.ts'),
-        elements: resolve(__dirname, 'src/elements.ts')
+        elements: resolve(__dirname, 'src/elements.ts'),
+        'fragments/party-button/index': resolve(__dirname, 'src/fragments/party-button/index.ts'),
+        'fragments/dashboard/index': resolve(__dirname, 'src/fragments/dashboard/index.ts')
       },
       formats: ['es']
     },
@@ -27,11 +34,15 @@ export default defineConfig({
           react: 'React',
           'react-dom': 'ReactDOM'
         },
-        assetFileNames: 'assets/[name][extname]'
+        assetFileNames: 'assets/[name][extname]',
+        preserveModules: true,
+        preserveModulesRoot: 'src'
       }
     },
     cssCodeSplit: false,
-    cssMinify: true
+    cssMinify: true,
+    outDir: 'dist',
+    emptyOutDir: true
   },
   server: {
     port: 3001

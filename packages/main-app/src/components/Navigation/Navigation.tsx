@@ -54,13 +54,22 @@ export const Navigation: React.FC<NavigationProps> = ({ isCollapsed }) => (
       Home
     </NavLink>
     <NavLink 
-      to="/fragments" 
+      to="/fragment-demo" 
       style={({ isActive }) => ({
         ...styles.link,
         ...(isActive ? styles.activeLink : {})
       })}
     >
       Web Fragments Demo
+    </NavLink>
+    <NavLink 
+      to="/dashboard" 
+      style={({ isActive }) => ({
+        ...styles.link,
+        ...(isActive ? styles.activeLink : {})
+      })}
+    >
+      Dashboard
     </NavLink>
   </nav>
 ); 

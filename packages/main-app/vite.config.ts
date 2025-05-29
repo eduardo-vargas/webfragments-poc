@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { resolve } from 'path';
 
 export default defineConfig({
   plugins: [react()],
@@ -12,7 +13,10 @@ export default defineConfig({
     }
   },
   resolve: {
-    preserveSymlinks: true
+    preserveSymlinks: true,
+    alias: {
+      '@webfragments/core': resolve(__dirname, '../webfragments/dist')
+    }
   },
   optimizeDeps: {
     include: [
@@ -21,7 +25,9 @@ export default defineConfig({
       'react-router',
       'scheduler',
       '@webfragments/core',
-      '@webfragments/core/elements'
+      '@webfragments/core/elements',
+      '@webfragments/core/fragments/party-button',
+      '@webfragments/core/fragments/dashboard'
     ]
   },
   css: {

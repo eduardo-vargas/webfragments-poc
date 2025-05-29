@@ -1,6 +1,6 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import PartyButton from '../PartyButton';
+import Dashboard from '../Dashboard';
 
 const container = document.getElementById('root');
 if (!container) throw new Error('Root element not found');
@@ -13,9 +13,10 @@ root.render(
       justifyContent: 'center', 
       alignItems: 'center', 
       minHeight: '100vh',
-      background: '#f5f5f5'
+      background: '#f5f5f5',
+      padding: '2rem'
     }}>
-      <PartyButton />
+      <Dashboard />
     </div>
   </React.StrictMode>
 ); 

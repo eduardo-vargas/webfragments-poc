@@ -1,5 +1,8 @@
 import { ReactNode, useEffect, useState } from 'react';
 
+// Initialize web fragments
+import './initialize';
+
 export interface WebFragment {
   id: string;
   content: ReactNode;
@@ -82,5 +85,15 @@ export function useWebFragment(fragmentId: string, options?: WebFragmentHookOpti
   return { fragment, error, loading };
 }
 
-// Export local fragments
-export { partyButtonFragment } from './fragments/party-button'; 
+// Export types
+export * from './types';
+
+// Export hooks
+export * from './hooks/useWebFragment';
+
+// Export fragments and components
+export * from './fragments/party-button';
+export * from './fragments/dashboard';
+
+// Export core functionality
+export * from './elements'; 
