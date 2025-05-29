@@ -63,14 +63,15 @@ jobs:
           # Create a temporary directory
           mkdir -p tmp_deployment
           
-          # Try to download the current deployment
-          curl -L "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/" -o tmp_deployment/index.html || true
-          
           # Create the fragments directory
           mkdir -p tmp_deployment/fragments
           
           # Copy the new fragments build
           cp -r packages/webfragments/dist/* tmp_deployment/fragments/
+          
+          # List the contents of the deployment directory for verification
+          echo "📦 Deployment directory contents:"
+          ls -R tmp_deployment/fragments/
           
           # Ensure demo HTML files are in the correct location
           for fragment in party-button dashboard; do
@@ -98,11 +99,20 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
-      - name: Display Deployment URLs
+      - name: Verify and Display Deployment URLs
         run: |
           echo "🚀 Fragments have been deployed!"
           echo "📍 Access your fragments at:"
           echo "🖥️ Party Button Demo: ${{ steps.deployment.outputs.page_url }}fragments/party-button/demo/"
           echo "🖥️ Dashboard Demo: ${{ steps.deployment.outputs.page_url }}fragments/dashboard/demo/"
           echo "📦 Party Button Module: ${{ steps.deployment.outputs.page_url }}fragments/party-button/index.js"
-          echo "📦 Dashboard Module: ${{ steps.deployment.outputs.page_url }}fragments/dashboard/index.js" 
+          echo "📦 Dashboard Module: ${{ steps.deployment.outputs.page_url }}fragments/dashboard/index.js"
+          
+          # Verify the deployed files
+          echo "🔍 Verifying deployed files..."
+          for url in \
+            "${{ steps.deployment.outputs.page_url }}fragments/party-button/index.js" \
+            "${{ steps.deployment.outputs.page_url }}fragments/dashboard/index.js"; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" "$url")
+            echo "Checking $url - Status: $code"
+          done 

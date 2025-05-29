@@ -53,7 +53,14 @@ export default defineConfig({
     outDir: 'dist',
     emptyOutDir: true,
     rollupOptions: {
-      external: ['@remix-run/router']
+      external: [
+        '@remix-run/router',
+        'scheduler',
+        'react',
+        'react-dom',
+        'react-router',
+        'react-router-dom'
+      ]
     }
   }
 }); 
