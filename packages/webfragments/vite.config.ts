@@ -109,9 +109,11 @@ export default defineConfig({
           'react-dom': 'ReactDOM'
         },
         entryFileNames: (chunkInfo) => {
-          // Keep demo files in their respective directories
-          if (chunkInfo.name.includes('/demo/')) {
-            return `${chunkInfo.name.replace('.tsx', '')}.js`;
+          const name = chunkInfo.name;
+          // Handle demo files
+          if (name.includes('/demo/')) {
+            const fragment = name.split('/')[0];
+            return `${fragment}/demo/main.js`;
           }
           return '[name].js';
         },
