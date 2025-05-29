@@ -3,9 +3,19 @@ import react from '@vitejs/plugin-react';
 import dts from 'vite-plugin-dts';
 import { fileURLToPath } from 'url';
 import { dirname, resolve } from 'path';
+import fs from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+// Get the repo name from package.json
+const getRepoName = () => {
+  const rootPkgPath = resolve(__dirname, '../../package.json');
+  const pkgJson = JSON.parse(fs.readFileSync(rootPkgPath, 'utf-8'));
+  return pkgJson.name;
+};
+
+const REPO_NAME = getRepoName();
 
 export default defineConfig({
   plugins: [
@@ -17,6 +27,7 @@ export default defineConfig({
       outDir: 'dist/types'
     })
   ],
+  base: process.env.NODE_ENV === 'production' ? `/${REPO_NAME}/fragments/` : '/',
   build: {
     lib: {
       entry: {

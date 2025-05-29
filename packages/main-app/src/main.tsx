@@ -21,13 +21,16 @@ console.log('[Main] Registering dashboard fragment');
 registerFragment('dashboard', Dashboard);
 console.log('[Main] Dashboard fragment registered');
 
+// Get base path for GitHub Pages
+const BASE_PATH = import.meta.env.DEV ? '' : '/webfragments-poc';
+
 // Create the root element
 const root = ReactDOM.createRoot(document.getElementById('root')!);
 
 // Render the app
 root.render(
   <React.StrictMode>
-    <Router>
+    <Router basename={BASE_PATH}>
       <Layout>
         <Routes>
           <Route path="/" element={<Home />} />

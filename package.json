@@ -14,6 +14,8 @@
     "reset:full": "rm -rf node_modules packages/*/node_modules packages/*/dist && pnpm install && pnpm run build"
   },
   "devDependencies": {
-    "typescript": "^5.0.0"
+    "@types/node": "^22.15.24",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5"
   }
 }

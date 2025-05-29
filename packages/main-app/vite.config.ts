@@ -1,10 +1,20 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { resolve } from 'path';
+import fs from 'fs';
+
+// Get the repo name from package.json
+const getRepoName = () => {
+  const rootPkgPath = resolve(__dirname, '../../package.json');
+  const pkgJson = JSON.parse(fs.readFileSync(rootPkgPath, 'utf-8'));
+  return pkgJson.name;
+};
+
+const REPO_NAME = getRepoName();
 
 export default defineConfig({
   plugins: [react()],
-  mode: 'development',
+  base: process.env.NODE_ENV === 'production' ? `/${REPO_NAME}/` : '/',
   server: {
     port: 3000,
     open: true,
@@ -38,6 +48,8 @@ export default defineConfig({
   build: {
     commonjsOptions: {
       include: [/@webfragments\/core/, /node_modules/]
-    }
+    },
+    outDir: 'dist',
+    emptyOutDir: true
   }
 }); 
