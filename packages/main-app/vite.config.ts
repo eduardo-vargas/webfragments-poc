@@ -13,7 +13,6 @@ const getRepoName = () => {
 const REPO_NAME = getRepoName();
 const IS_PROD = process.env.NODE_ENV === 'production';
 const BASE_URL = IS_PROD ? `/${REPO_NAME}/` : '/';
-const FRAGMENTS_URL = IS_PROD ? `/${REPO_NAME}/fragments/` : '../webfragments/dist/';
 
 export default defineConfig({
   plugins: [react()],
@@ -28,9 +27,10 @@ export default defineConfig({
   resolve: {
     preserveSymlinks: true,
     alias: {
-      '@webfragments/core': IS_PROD 
-        ? `${BASE_URL}fragments`  // Will resolve to /webfragments-poc/fragments in production
-        : resolve(__dirname, '../webfragments/dist')
+      '@webfragments/core': resolve(__dirname, '../webfragments/src'),
+      '@webfragments/core/elements': resolve(__dirname, '../webfragments/src/elements'),
+      '@webfragments/core/fragments/party-button': resolve(__dirname, '../webfragments/src/fragments/party-button'),
+      '@webfragments/core/fragments/dashboard': resolve(__dirname, '../webfragments/src/fragments/dashboard')
     }
   },
   optimizeDeps: {
@@ -38,11 +38,7 @@ export default defineConfig({
       'react-router-dom',
       '@remix-run/router',
       'react-router',
-      'scheduler',
-      '@webfragments/core',
-      '@webfragments/core/elements',
-      '@webfragments/core/fragments/party-button',
-      '@webfragments/core/fragments/dashboard'
+      'scheduler'
     ]
   },
   css: {

@@ -36,6 +36,12 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     emptyOutDir: true,
+    lib: {
+      entry: resolve(__dirname, 'src/index.ts'),
+      name: 'webfragments',
+      formats: ['es', 'umd'],
+      fileName: (format) => `webfragments.${format}.js`
+    },
     rollupOptions: {
       input: {
         ...libEntries,
@@ -60,6 +66,7 @@ export default defineConfig({
     }
   },
   server: {
+    cors: true,
     port: 3001
   }
 }); 
