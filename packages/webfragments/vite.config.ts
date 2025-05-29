@@ -42,6 +42,19 @@ export default defineConfig({
       include: '**/*.tsx',
     }),
     {
+      name: 'resolve-tsx-as-js',
+      resolveId(source, importer) {
+        if (!IS_PROD && importer?.includes('/demo/') && source.endsWith('.js')) {
+          const potentialTsxPath = source.replace('.js', '.tsx');
+          const absolutePath = resolve(dirname(importer), potentialTsxPath);
+          if (fs.existsSync(absolutePath)) {
+            return absolutePath;
+          }
+        }
+        return null;
+      }
+    },
+    {
       name: 'demo-handler',
       configureServer(server) {
         return () => {
