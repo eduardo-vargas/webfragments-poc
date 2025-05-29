@@ -26,121 +26,69 @@ const libEntries = {
   'dashboard/index': resolve(__dirname, 'src/fragments/dashboard/index.ts')
 };
 
-// Demo entries configuration
-const fragments = ['party-button', 'dashboard'];
-const demoEntries = Object.fromEntries(
-  fragments.map(fragment => [
-    `${fragment}/demo/index`, resolve(__dirname, `src/fragments/${fragment}/demo/index.html`)
-  ])
-);
-
-// Build configuration
-export default defineConfig({
-  plugins: [
-    react({
-      jsxRuntime: 'automatic',
-      include: '**/*.tsx',
-    }),
-    {
-      name: 'resolve-tsx-as-js',
-      resolveId(source, importer) {
-        if (!IS_PROD && importer?.includes('/demo/') && source.endsWith('.js')) {
-          const potentialTsxPath = source.replace('.js', '.tsx');
-          const absolutePath = resolve(dirname(importer), potentialTsxPath);
-          if (fs.existsSync(absolutePath)) {
-            return absolutePath;
+export default defineConfig(({ command }) => {
+  const isBuild = command === 'build';
+  
+  return {
+    plugins: [
+      react({
+        jsxRuntime: 'automatic',
+        include: '**/*.tsx',
+      }),
+      {
+        name: 'resolve-tsx-as-js',
+        resolveId(source, importer) {
+          // Handle both absolute and relative paths
+          const jsFile = source.endsWith('.js') ? source : null;
+          if (!IS_PROD && jsFile) {
+            // Try to find corresponding tsx file
+            const tsxPath = jsFile.replace('.js', '.tsx');
+            // Handle paths relative to the demo directory
+            const resolvedPath = resolve(
+              __dirname,
+              process.env.VITE_ROOT_DIR || '',
+              tsxPath.startsWith('/') ? tsxPath.slice(1) : tsxPath
+            );
+            if (fs.existsSync(resolvedPath)) {
+              return resolvedPath;
+            }
           }
+          return null;
         }
-        return null;
+      }
+    ],
+    base: BASE_URL,
+    build: {
+      outDir: 'dist',
+      emptyOutDir: true,
+      rollupOptions: {
+        input: isBuild ? {
+          ...libEntries,
+          // Only include demo entries in build mode
+          ...Object.fromEntries(
+            ['party-button', 'dashboard'].map(fragment => [
+              `${fragment}/demo/index`, resolve(__dirname, `src/fragments/${fragment}/demo/index.html`)
+            ])
+          )
+        } : undefined,
+        external: ['react', 'react-dom'],
+        output: {
+          globals: {
+            react: 'React',
+            'react-dom': 'ReactDOM'
+          },
+          entryFileNames: '[name].js',
+          assetFileNames: 'assets/[name]-[hash].[ext]',
+          chunkFileNames: 'chunks/[name]-[hash].js'
+        }
       }
     },
-    {
-      name: 'demo-handler',
-      configureServer(server) {
-        return () => {
-          server.middlewares.use(async (req, res, next) => {
-            if (!req.url) return next();
-
-            // Handle demo routes
-            const demoMatch = req.url.match(/^\/(party-button|dashboard)\/demo\/?$/);
-            if (demoMatch) {
-              const fragment = demoMatch[1];
-              const htmlPath = resolve(__dirname, `src/fragments/${fragment}/demo/index.html`);
-              
-              try {
-                let html = fs.readFileSync(htmlPath, 'utf-8');
-                
-                // Add React development setup and fragment registration
-                html = html.replace(
-                  '</head>',
-                  `
-                    <script>
-                      window.process = { env: { NODE_ENV: 'development' } };
-                    </script>
-                    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
-                    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-                    <script type="module" src="/src/elements.ts"></script>
-                    </head>
-                  `
-                );
-
-                res.statusCode = 200;
-                res.setHeader('Content-Type', 'text/html');
-                res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-                return res.end(html);
-              } catch (e) {
-                console.error(`Error serving ${htmlPath}:`, e);
-                return next();
-              }
-            }
-
-            next();
-          });
-        };
+    server: {
+      cors: true,
+      fs: {
+        strict: false,
+        allow: ['..', '../..', '../../..']  // Allow accessing files up to the project root
       }
     }
-  ],
-  base: BASE_URL,
-  build: {
-    outDir: 'dist',
-    emptyOutDir: true,
-    rollupOptions: {
-      input: {
-        ...libEntries,
-        ...demoEntries,
-        // Add demo entry points explicitly
-        ...Object.fromEntries(
-          fragments.map(fragment => [
-            `${fragment}/demo/main`, resolve(__dirname, `src/fragments/${fragment}/demo/main.tsx`)
-          ])
-        )
-      },
-      external: ['react', 'react-dom'],
-      output: {
-        globals: {
-          react: 'React',
-          'react-dom': 'ReactDOM'
-        },
-        entryFileNames: (chunkInfo) => {
-          const name = chunkInfo.name;
-          // Handle demo files
-          if (name.includes('/demo/')) {
-            const fragment = name.split('/')[0];
-            return `${fragment}/demo/main.js`;
-          }
-          return '[name].js';
-        },
-        assetFileNames: 'assets/[name]-[hash].[ext]',
-        chunkFileNames: 'chunks/[name]-[hash].js'
-      }
-    }
-  },
-  server: {
-    cors: true,
-    port: 3001,
-    fs: {
-      strict: false,
-      allow: ['..', '../..']
-    }
-  }
-}); 
+  };
+});

@@ -38,8 +38,8 @@
     "build:lib": "vite build",
     "build:demos": "vite build src/fragments/party-button/demo && vite build src/fragments/dashboard/demo",
     "clean": "rm -rf dist",
-    "serve:party-button": "vite serve src/fragments/party-button/demo --port 3002",
-    "serve:dashboard": "vite serve src/fragments/dashboard/demo --port 3003",
+    "serve:party-button": "cd src/fragments/party-button/demo && vite --config ../../../../vite.config.ts --port 3002",
+    "serve:dashboard": "cd src/fragments/dashboard/demo && vite --config ../../../../vite.config.ts --port 3003",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
