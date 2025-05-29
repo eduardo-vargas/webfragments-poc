@@ -60,10 +60,23 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
+      - name: Prepare deployment
+        run: |
+          # Create a temporary directory
+          mkdir -p tmp_deployment
+          
+          # Copy the main app build
+          cp -r packages/main-app/dist/* tmp_deployment/
+          
+          # Try to download and preserve fragments
+          mkdir -p tmp_deployment/fragments
+          curl -L "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/fragments/party-button/index.js" -o tmp_deployment/fragments/party-button/index.js || true
+          curl -L "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/fragments/dashboard/index.js" -o tmp_deployment/fragments/dashboard/index.js || true
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './packages/main-app/dist'
+          path: './tmp_deployment'
 
   deploy:
     environment:
@@ -74,4 +87,9 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4 
+        uses: actions/deploy-pages@v4
+
+      - name: Display Deployment URL
+        run: |
+          echo "🚀 Main App has been deployed!"
+          echo "📍 Access your app at: ${{ steps.deployment.outputs.page_url }}" 

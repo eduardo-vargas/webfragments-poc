@@ -8,6 +8,12 @@ node_modules/
 /build/
 packages/*/dist/
 packages/*/build/
+**/dist/
+**/build/
+
+# TypeScript declaration files in dist
+**/*.d.ts
+**/*.d.ts.map
 
 # Cache directories
 .parcel-cache/
@@ -38,10 +44,6 @@ debug.log
 # Coverage and test directories
 /coverage/
 /.nyc_output/
-
-# Production build files
-/build/
-*/dist/
 
 # TypeScript cache
 *.tsbuildinfo

@@ -56,15 +56,24 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
-      - name: Prepare Fragments Build
+      - name: Download previous deployment
         run: |
-          mkdir -p ./dist/fragments
-          cp -r packages/webfragments/dist/* ./dist/fragments/
+          # Create a temporary directory
+          mkdir -p tmp_deployment
+          
+          # Try to download the current deployment
+          curl -L "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/" -o tmp_deployment/index.html || true
+          
+          # Create the fragments directory
+          mkdir -p tmp_deployment/fragments
+          
+          # Copy the new fragments build
+          cp -r packages/webfragments/dist/* tmp_deployment/fragments/
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './dist'
+          path: './tmp_deployment'
 
   deploy:
     environment:
@@ -75,4 +84,13 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4 
+        uses: actions/deploy-pages@v4
+
+      - name: Display Deployment URLs
+        run: |
+          echo "🚀 Fragments have been deployed!"
+          echo "📍 Access your fragments at:"
+          echo "🖥️ Party Button Demo: ${{ steps.deployment.outputs.page_url }}fragments/party-button/demo/"
+          echo "🖥️ Dashboard Demo: ${{ steps.deployment.outputs.page_url }}fragments/dashboard/demo/"
+          echo "📦 Party Button Module: ${{ steps.deployment.outputs.page_url }}fragments/party-button/index.js"
+          echo "📦 Dashboard Module: ${{ steps.deployment.outputs.page_url }}fragments/dashboard/index.js" 

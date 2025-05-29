@@ -1,6 +1,5 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import dts from 'vite-plugin-dts';
 import { fileURLToPath } from 'url';
 import { dirname, resolve } from 'path';
 import fs from 'fs';
@@ -17,43 +16,48 @@ const getRepoName = () => {
 
 const REPO_NAME = getRepoName();
 
+// Separate library entries from HTML entries
+const libEntries = {
+  'index': resolve(__dirname, 'src/index.ts'),
+  'elements': resolve(__dirname, 'src/elements.ts'),
+  'party-button/index': resolve(__dirname, 'src/fragments/party-button/index.ts'),
+  'dashboard/index': resolve(__dirname, 'src/fragments/dashboard/index.ts')
+};
+
+const demoEntries = {
+  'party-button/demo/index': resolve(__dirname, 'src/fragments/party-button/dev/index.html'),
+  'dashboard/demo/index': resolve(__dirname, 'src/fragments/dashboard/dev/index.html')
+};
+
+// Build both library and standalone versions
 export default defineConfig({
-  plugins: [
-    react(),
-    dts({ 
-      rollupTypes: true,
-      include: ['src/**/*.ts', 'src/**/*.tsx'],
-      exclude: ['src/**/dev/**/*'],
-      outDir: 'dist/types'
-    })
-  ],
+  plugins: [react()],
   base: process.env.NODE_ENV === 'production' ? `/${REPO_NAME}/fragments/` : '/',
   build: {
-    lib: {
-      entry: {
-        index: resolve(__dirname, 'src/index.ts'),
-        elements: resolve(__dirname, 'src/elements.ts'),
-        'fragments/party-button/index': resolve(__dirname, 'src/fragments/party-button/index.ts'),
-        'fragments/dashboard/index': resolve(__dirname, 'src/fragments/dashboard/index.ts')
-      },
-      formats: ['es']
-    },
+    outDir: 'dist',
+    emptyOutDir: true,
     rollupOptions: {
+      input: {
+        ...libEntries,
+        ...demoEntries
+      },
       external: ['react', 'react-dom'],
       output: {
         globals: {
           react: 'React',
           'react-dom': 'ReactDOM'
         },
-        assetFileNames: 'assets/[name][extname]',
-        preserveModules: true,
-        preserveModulesRoot: 'src'
+        entryFileNames: (chunkInfo) => {
+          return '[name].js';
+        },
+        assetFileNames: (assetInfo) => {
+          if (assetInfo.name?.endsWith('.html')) {
+            return '[name].[ext]';
+          }
+          return 'assets/[name].[ext]';
+        }
       }
-    },
-    cssCodeSplit: false,
-    cssMinify: true,
-    outDir: 'dist',
-    emptyOutDir: true
+    }
   },
   server: {
     port: 3001
