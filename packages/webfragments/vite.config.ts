@@ -29,9 +29,8 @@ const libEntries = {
 // Demo entries configuration
 const fragments = ['party-button', 'dashboard'];
 const demoEntries = Object.fromEntries(
-  fragments.flatMap(fragment => [
-    [`${fragment}/demo/main`, resolve(__dirname, `src/fragments/${fragment}/demo/main.tsx`)],
-    [`${fragment}/demo/index`, resolve(__dirname, `src/fragments/${fragment}/demo/index.html`)]
+  fragments.map(fragment => [
+    `${fragment}/demo/index`, resolve(__dirname, `src/fragments/${fragment}/demo/index.html`)
   ])
 );
 
@@ -97,7 +96,13 @@ export default defineConfig({
     rollupOptions: {
       input: {
         ...libEntries,
-        ...demoEntries
+        ...demoEntries,
+        // Add demo entry points explicitly
+        ...Object.fromEntries(
+          fragments.map(fragment => [
+            `${fragment}/demo/main`, resolve(__dirname, `src/fragments/${fragment}/demo/main.tsx`)
+          ])
+        )
       },
       external: ['react', 'react-dom'],
       output: {
@@ -106,24 +111,14 @@ export default defineConfig({
           'react-dom': 'ReactDOM'
         },
         entryFileNames: (chunkInfo) => {
-          const name = chunkInfo.name;
-          if (name?.includes('/demo/')) {
-            // For demo entries, maintain the directory structure
-            return name.endsWith('.html') ? `${name}` : `${name}.js`;
+          // Keep demo files in their respective directories
+          if (chunkInfo.name.includes('/demo/')) {
+            return `${chunkInfo.name}.js`;
           }
           return '[name].js';
         },
-        assetFileNames: (assetInfo) => {
-          if (!assetInfo.name) return 'assets/[name]-[hash].[ext]';
-          
-          const name = assetInfo.name;
-          if (name.includes('/demo/')) {
-            return name.replace('src/fragments/', '');
-          }
-          
-          return 'assets/[name]-[hash].[ext]';
-        },
-        chunkFileNames: 'assets/[name]-[hash].js'
+        assetFileNames: 'assets/[name]-[hash].[ext]',
+        chunkFileNames: 'chunks/[name]-[hash].js'
       }
     }
   },
