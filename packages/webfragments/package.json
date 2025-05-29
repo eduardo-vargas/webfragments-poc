@@ -17,17 +17,21 @@
       "default": "./dist/elements.js"
     },
     "./fragments/party-button": {
-      "types": "./dist/types/fragments/party-button/index.d.ts",
-      "import": "./dist/fragments/party-button/index.js",
-      "default": "./dist/fragments/party-button/index.js"
+      "types": "./src/fragments/party-button/index.d.ts",
+      "import": "./dist/party-button/index.js",
+      "default": "./dist/party-button/index.js"
     },
     "./fragments/dashboard": {
-      "types": "./dist/types/fragments/dashboard/index.d.ts",
-      "import": "./dist/fragments/dashboard/index.js",
-      "default": "./dist/fragments/dashboard/index.js"
+      "types": "./src/fragments/dashboard/index.d.ts",
+      "import": "./dist/dashboard/index.js",
+      "default": "./dist/dashboard/index.js"
     },
     "./dist/assets/style.css": "./dist/assets/style.css"
   },
+  "files": [
+    "dist",
+    "src/fragments/*/index.d.ts"
+  ],
   "scripts": {
     "dev": "vite --port 3001",
     "build": "pnpm run clean && tsc && vite build",

@@ -9,7 +9,7 @@ export function createFragment<T = {}>(id: string, Component: ComponentType<T>):
   return Component;
 }
 
-export function registerFragment<T = {}>(id: string, Component: ComponentType<T>): void {
+export function registerFragment(id: string, Component: ComponentType<any>): void {
   fragmentRegistry.set(id, Component);
 }
 
@@ -43,11 +43,12 @@ export class WebFragment extends HTMLElement {
       this.root = createRoot(container);
     }
 
-    // If content is a component type, wrap it in a React element
     const element = React.createElement(
       React.StrictMode,
       null,
-      typeof Component === 'function' 
+      React.isValidElement(Component) 
+        ? Component 
+        : typeof Component === 'function'
         ? React.createElement(Component)
         : Component
     );

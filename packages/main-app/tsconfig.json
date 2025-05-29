@@ -29,8 +29,7 @@
     /* Module Resolution */
     "baseUrl": ".",
     "paths": {
-      "@webfragments/core": ["../webfragments/dist/types"],
-      "@webfragments/core/*": ["../webfragments/dist/types/*"]
+      "@webfragments/core/*": ["../webfragments/src/*"]
     }
   },
   "include": ["src"],

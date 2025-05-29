@@ -15,8 +15,10 @@ const getRepoName = () => {
 };
 
 const REPO_NAME = getRepoName();
+const IS_PROD = process.env.NODE_ENV === 'production';
+const BASE_URL = IS_PROD ? `/${REPO_NAME}/fragments/` : '/';
 
-// Separate library entries from HTML entries
+// Library entries are always needed
 const libEntries = {
   'index': resolve(__dirname, 'src/index.ts'),
   'elements': resolve(__dirname, 'src/elements.ts'),
@@ -24,29 +26,24 @@ const libEntries = {
   'dashboard/index': resolve(__dirname, 'src/fragments/dashboard/index.ts')
 };
 
-const demoEntries = {
-  'party-button/demo/index': resolve(__dirname, 'src/fragments/party-button/dev/index.html'),
-  'dashboard/demo/index': resolve(__dirname, 'src/fragments/dashboard/dev/index.html')
-};
+// Demo entries are only used in production builds
+const demoEntries = IS_PROD ? {
+  'party-button/demo/index': resolve(__dirname, 'src/fragments/party-button/dev/main.tsx'),
+  'dashboard/demo/index': resolve(__dirname, 'src/fragments/dashboard/dev/main.tsx')
+} : {};
 
-// Build both library and standalone versions
+// Build configuration
 export default defineConfig({
   plugins: [react()],
-  base: process.env.NODE_ENV === 'production' ? `/${REPO_NAME}/fragments/` : '/',
+  base: BASE_URL,
   build: {
     outDir: 'dist',
     emptyOutDir: true,
-    lib: {
-      entry: resolve(__dirname, 'src/index.ts'),
-      name: 'webfragments',
-      formats: ['es', 'umd'],
-      fileName: (format) => `webfragments.${format}.js`
-    },
     rollupOptions: {
-      input: {
+      input: IS_PROD ? {
         ...libEntries,
         ...demoEntries
-      },
+      } : libEntries,
       external: ['react', 'react-dom'],
       output: {
         globals: {
@@ -54,13 +51,16 @@ export default defineConfig({
           'react-dom': 'ReactDOM'
         },
         entryFileNames: (chunkInfo) => {
+          if (chunkInfo.name?.includes('/demo')) {
+            return '[name]/index.js';
+          }
           return '[name].js';
         },
         assetFileNames: (assetInfo) => {
           if (assetInfo.name?.endsWith('.html')) {
-            return '[name].[ext]';
+            return '[name]/index.html';
           }
-          return 'assets/[name].[ext]';
+          return 'assets/[name]-[hash].[ext]';
         }
       }
     }

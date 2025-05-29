@@ -4,27 +4,23 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "clean": "rm -rf dist",
     "dev": "vite --port 3000",
-    "build": "pnpm run clean && tsc && vite build",
-    "preview": "vite preview",
+    "build": "pnpm run clean && vite build",
+    "clean": "rm -rf dist",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@remix-run/router": "^1.15.0",
     "@webfragments/core": "workspace:*",
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0",
-    "react-router": "^6.0.0",
-    "react-router-dom": "^6.0.0",
-    "scheduler": "^0.23.0"
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.22.3"
   },
   "devDependencies": {
-    "@types/node": "^20.17.52",
-    "@types/react": "^18.0.0",
-    "@types/react-dom": "^18.0.0",
-    "@vitejs/plugin-react": "^4.5.0",
-    "typescript": "^5.8.3",
-    "vite": "^5.4.19"
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@types/node": "^20.0.0",
+    "@vitejs/plugin-react": "^4.2.0",
+    "typescript": "^5.0.0",
+    "vite": "^5.0.0"
   }
 }
