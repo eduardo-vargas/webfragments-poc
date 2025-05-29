@@ -16,7 +16,7 @@ const getRepoName = () => {
 
 const REPO_NAME = getRepoName();
 const IS_PROD = process.env.NODE_ENV === 'production';
-const BASE_URL = '/';
+const BASE_URL = IS_PROD ? '/webfragments-poc/fragments/' : '/';
 
 // Library entries are always needed
 const libEntries = {
@@ -28,19 +28,12 @@ const libEntries = {
 
 // Demo entries configuration
 const fragments = ['party-button', 'dashboard'];
-const demoEntries = {
-  'index': resolve(__dirname, 'index.html'),
-  ...Object.fromEntries(
-    fragments.flatMap(fragment => [
-      [`${fragment}/demo/index`, resolve(__dirname, `src/fragments/${fragment}/demo/main.tsx`)]
-    ])
-  ),
-  ...Object.fromEntries(
-    fragments.flatMap(fragment => [
-      [`${fragment}/demo`, resolve(__dirname, `src/fragments/${fragment}/demo/index.html`)]
-    ])
-  )
-};
+const demoEntries = Object.fromEntries(
+  fragments.flatMap(fragment => [
+    [`${fragment}/demo/main`, resolve(__dirname, `src/fragments/${fragment}/demo/main.tsx`)],
+    [`${fragment}/demo/index`, resolve(__dirname, `src/fragments/${fragment}/demo/index.html`)]
+  ])
+);
 
 // Build configuration
 export default defineConfig({
@@ -81,12 +74,6 @@ export default defineConfig({
                   `
                 );
 
-                // Update the module import to use absolute path
-                html = html.replace(
-                  './main.tsx',
-                  `/src/fragments/${fragment}/demo/main.tsx`
-                );
-
                 res.statusCode = 200;
                 res.setHeader('Content-Type', 'text/html');
                 res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
@@ -121,8 +108,8 @@ export default defineConfig({
         entryFileNames: (chunkInfo) => {
           const name = chunkInfo.name;
           if (name?.includes('/demo/')) {
-            const fragment = name.split('/')[0];
-            return `${fragment}/demo/assets/index.js`;
+            // For demo entries, maintain the directory structure
+            return name.endsWith('.html') ? `${name}` : `${name}.js`;
           }
           return '[name].js';
         },
@@ -131,9 +118,7 @@ export default defineConfig({
           
           const name = assetInfo.name;
           if (name.includes('/demo/')) {
-            const fragment = name.split('/')[3];
-            const fileName = name.split('/').pop()?.split('.')[0];
-            return `${fragment}/demo/assets/${fileName}-[hash].[ext]`;
+            return name.replace('src/fragments/', '');
           }
           
           return 'assets/[name]-[hash].[ext]';

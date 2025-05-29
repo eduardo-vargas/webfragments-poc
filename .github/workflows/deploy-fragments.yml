@@ -51,12 +51,14 @@ jobs:
         run: pnpm install
 
       - name: Build Fragments
-        run: pnpm --filter @webfragments/core run build
+        run: |
+          export NODE_ENV=production
+          pnpm --filter @webfragments/core run build
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
-      - name: Download previous deployment
+      - name: Prepare deployment directory
         run: |
           # Create a temporary directory
           mkdir -p tmp_deployment
@@ -69,6 +71,16 @@ jobs:
           
           # Copy the new fragments build
           cp -r packages/webfragments/dist/* tmp_deployment/fragments/
+          
+          # Ensure demo HTML files are in the correct location
+          for fragment in party-button dashboard; do
+            mkdir -p "tmp_deployment/fragments/$fragment/demo"
+            if [ -f "tmp_deployment/fragments/$fragment/demo/index.html" ]; then
+              echo "Demo HTML found for $fragment"
+            else
+              echo "Warning: Demo HTML not found for $fragment"
+            fi
+          done
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

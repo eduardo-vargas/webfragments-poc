@@ -1,0 +1,10 @@
+{
+  "action": "workflow_dispatch",
+  "inputs": {},
+  "repository": {
+    "name": "webfragments-poc",
+    "owner": {
+      "login": "eduardo-vargas"
+    }
+  }
+} 
