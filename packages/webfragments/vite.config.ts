@@ -16,7 +16,7 @@ const getRepoName = () => {
 
 const REPO_NAME = getRepoName();
 const IS_PROD = process.env.NODE_ENV === 'production';
-const BASE_URL = IS_PROD ? `/${REPO_NAME}/fragments/` : '/';
+const BASE_URL = '/';
 
 // Library entries are always needed
 const libEntries = {
@@ -26,15 +26,83 @@ const libEntries = {
   'dashboard/index': resolve(__dirname, 'src/fragments/dashboard/index.ts')
 };
 
-// Demo entries are only used in production builds
+// Demo entries configuration
+const fragments = ['party-button', 'dashboard'];
 const demoEntries = {
-  'party-button/demo/index': resolve(__dirname, 'src/fragments/party-button/dev/index.html'),
-  'dashboard/demo/index': resolve(__dirname, 'src/fragments/dashboard/dev/index.html')
+  'index': resolve(__dirname, 'index.html'),
+  ...Object.fromEntries(
+    fragments.flatMap(fragment => [
+      [`${fragment}/demo/index`, resolve(__dirname, `src/fragments/${fragment}/demo/main.tsx`)]
+    ])
+  ),
+  ...Object.fromEntries(
+    fragments.flatMap(fragment => [
+      [`${fragment}/demo`, resolve(__dirname, `src/fragments/${fragment}/demo/index.html`)]
+    ])
+  )
 };
 
 // Build configuration
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react({
+      jsxRuntime: 'automatic',
+      include: '**/*.tsx',
+    }),
+    {
+      name: 'demo-handler',
+      configureServer(server) {
+        return () => {
+          server.middlewares.use(async (req, res, next) => {
+            if (!req.url) return next();
+
+            console.log('Request URL:', req.url);
+
+            // Handle demo routes
+            const demoMatch = req.url.match(/^\/(party-button|dashboard)\/demo\/?$/);
+            if (demoMatch) {
+              const fragment = demoMatch[1];
+              const htmlPath = resolve(__dirname, `src/fragments/${fragment}/demo/index.html`);
+              
+              try {
+                let html = fs.readFileSync(htmlPath, 'utf-8');
+                
+                // Add React development setup and fragment registration
+                html = html.replace(
+                  '</head>',
+                  `
+                    <script>
+                      window.process = { env: { NODE_ENV: 'development' } };
+                    </script>
+                    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+                    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+                    <script type="module" src="/src/elements.ts"></script>
+                    </head>
+                  `
+                );
+
+                // Update the module import to use absolute path
+                html = html.replace(
+                  './main.tsx',
+                  `/src/fragments/${fragment}/demo/main.tsx`
+                );
+
+                res.statusCode = 200;
+                res.setHeader('Content-Type', 'text/html');
+                res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+                return res.end(html);
+              } catch (e) {
+                console.error(`Error serving ${htmlPath}:`, e);
+                return next();
+              }
+            }
+
+            next();
+          });
+        };
+      }
+    }
+  ],
   base: BASE_URL,
   build: {
     outDir: 'dist',
@@ -51,23 +119,35 @@ export default defineConfig({
           'react-dom': 'ReactDOM'
         },
         entryFileNames: (chunkInfo) => {
-          if (chunkInfo.name?.includes('/demo/')) {
-            return 'assets/[name]-[hash].js';
+          const name = chunkInfo.name;
+          if (name?.includes('/demo/')) {
+            const fragment = name.split('/')[0];
+            return `${fragment}/demo/assets/index.js`;
           }
           return '[name].js';
         },
         assetFileNames: (assetInfo) => {
-          if (assetInfo.name?.endsWith('.html')) {
-            const name = assetInfo.name.replace('/dev/', '/demo/');
-            return name;
+          if (!assetInfo.name) return 'assets/[name]-[hash].[ext]';
+          
+          const name = assetInfo.name;
+          if (name.includes('/demo/')) {
+            const fragment = name.split('/')[3];
+            const fileName = name.split('/').pop()?.split('.')[0];
+            return `${fragment}/demo/assets/${fileName}-[hash].[ext]`;
           }
+          
           return 'assets/[name]-[hash].[ext]';
-        }
+        },
+        chunkFileNames: 'assets/[name]-[hash].js'
       }
     }
   },
   server: {
     cors: true,
-    port: 3001
+    port: 3001,
+    fs: {
+      strict: false,
+      allow: ['..', '../..']
+    }
   }
 }); 

@@ -36,8 +36,8 @@
     "dev": "vite --port 3001",
     "build": "pnpm run clean && tsc && vite build",
     "clean": "rm -rf dist",
-    "serve:party-button": "vite serve src/fragments/party-button/dev",
-    "serve:dashboard": "vite serve src/fragments/dashboard/dev",
+    "serve:party-button": "vite serve src/fragments/party-button/demo --port 3002",
+    "serve:dashboard": "vite serve src/fragments/dashboard/demo --port 3003",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

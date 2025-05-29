@@ -2,6 +2,7 @@
   "name": "webfragments-poc",
   "private": true,
   "version": "1.0.0",
+  "packageManager": "pnpm@8.15.4",
   "workspaces": [
     "packages/*"
   ],

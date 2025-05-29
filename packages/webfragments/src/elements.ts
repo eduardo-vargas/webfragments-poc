@@ -3,6 +3,16 @@ import { createRoot } from 'react-dom/client';
 
 // Global registry for fragments
 const fragmentRegistry = new Map<string, ComponentType<any>>();
+let isInitialized = false;
+
+// Create a promise that resolves when both initialization and registration are complete
+let resolveInit: () => void;
+const readyPromise = new Promise<void>((resolve) => {
+  resolveInit = resolve;
+});
+
+// Track registration completion
+let pendingRegistrations = new Set<string>();
 
 export function createFragment<T = {}>(id: string, Component: ComponentType<T>): ComponentType<T> {
   fragmentRegistry.set(id, Component);
@@ -10,22 +20,66 @@ export function createFragment<T = {}>(id: string, Component: ComponentType<T>):
 }
 
 export function registerFragment(id: string, Component: ComponentType<any>): void {
+  console.log(`[Registry] Registering fragment: ${id}`);
   fragmentRegistry.set(id, Component);
+  pendingRegistrations.delete(id);
+  
+  // If all registrations are complete, resolve the promise
+  if (isInitialized && pendingRegistrations.size === 0) {
+    console.log('[Registry] All fragments registered, system ready');
+    resolveInit();
+  }
+}
+
+export function expectFragment(id: string): void {
+  pendingRegistrations.add(id);
+}
+
+export function getFragment(id: string): ComponentType<any> | undefined {
+  return fragmentRegistry.get(id);
 }
 
 // Web Fragment Custom Elements
 export class WebFragment extends HTMLElement {
   private isInitialized = false;
   private root: ReturnType<typeof createRoot> | null = null;
+  private fragmentId: string | null = null;
 
   constructor() {
     super();
+    // Create a shadow root for isolation
+    this.attachShadow({ mode: 'open' });
   }
 
-  connectedCallback() {
+  static get observedAttributes() {
+    return ['fragment-id'];
+  }
+
+  attributeChangedCallback(name: string, oldValue: string, newValue: string) {
+    if (name === 'fragment-id' && oldValue !== newValue) {
+      this.fragmentId = newValue;
+      if (this.isInitialized) {
+        this.tryRender();
+      }
+    }
+  }
+
+  async connectedCallback() {
     if (!this.isInitialized) {
       this.isInitialized = true;
-      this.render();
+      this.fragmentId = this.getAttribute('fragment-id');
+      
+      if (this.fragmentId) {
+        // Register this fragment as expected
+        expectFragment(this.fragmentId);
+        
+        // Show loading state
+        this.renderLoading();
+        
+        // Wait for initialization and registration
+        await readyPromise;
+        this.tryRender();
+      }
     }
   }
 
@@ -38,8 +92,8 @@ export class WebFragment extends HTMLElement {
   private renderContent(Component: ComponentType<any> | ReactNode) {
     if (!this.root) {
       const container = document.createElement('div');
-      container.id = `fragment-${this.getAttribute('fragment-id')}`;
-      this.appendChild(container);
+      container.id = `fragment-${this.fragmentId}`;
+      this.shadowRoot?.appendChild(container);
       this.root = createRoot(container);
     }
 
@@ -81,58 +135,40 @@ export class WebFragment extends HTMLElement {
     );
   }
 
-  private render() {
-    const fragmentId = this.getAttribute('fragment-id');
-    const src = this.getAttribute('src');
-
-    if (!fragmentId) {
+  private tryRender() {
+    if (!this.fragmentId) {
       console.error('Web fragment is missing fragment-id attribute');
       return;
     }
 
-    // Check if we have a local component registered
-    const Component = fragmentRegistry.get(fragmentId);
-    if (Component) {
-      this.renderContent(Component);
-    } else if (src) {
-      // Show loading state before fetching
-      this.renderLoading();
-      // Load remote fragment if no local component is found
-      this.loadFragment(src);
-    } else {
-      // If no local component and no src, show error
-      this.renderError();
-    }
-  }
+    console.log(`[WebFragment] Rendering fragment: ${this.fragmentId}`);
 
-  private async loadFragment(src: string) {
-    try {
-      const response = await fetch(src);
-      if (!response.ok) {
-        throw new Error(`Failed to load fragment: ${response.statusText}`);
-      }
-      
-      // Assuming the remote fragment returns a JSON with component data
-      const fragmentData = await response.json();
-      // Here you would properly sanitize and transform the remote data
-      // into a React component before rendering
-      this.renderContent(
-        React.createElement(
-          'div',
-          { className: 'web-fragment-remote' },
-          // Transform fragmentData into proper React elements
-          fragmentData.content
-        )
-      );
-    } catch (error) {
-      console.error('Error loading fragment:', error);
+    // Check if we have a local component registered
+    const Component = getFragment(this.fragmentId);
+    console.log(`[WebFragment] Found component for ${this.fragmentId}:`, !!Component);
+    
+    if (Component) {
+      console.log(`[WebFragment] Rendering local component for ${this.fragmentId}`);
+      this.renderContent(Component);
+    } else {
+      console.log(`[WebFragment] No component found for ${this.fragmentId}, showing error`);
       this.renderError();
     }
   }
 }
 
 export function initializeWebFragments() {
-  if (!customElements.get('web-fragment')) {
-    customElements.define('web-fragment', WebFragment);
+  if (!isInitialized) {
+    if (!customElements.get('web-fragment')) {
+      customElements.define('web-fragment', WebFragment);
+    }
+    isInitialized = true;
+    
+    // Only resolve if there are no pending registrations
+    if (pendingRegistrations.size === 0) {
+      console.log('[Registry] No fragments to wait for, system ready');
+      resolveInit();
+    }
   }
+  return readyPromise;
 } 
