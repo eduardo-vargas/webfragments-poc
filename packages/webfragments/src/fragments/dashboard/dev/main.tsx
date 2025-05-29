@@ -2,6 +2,17 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import Dashboard from '../Dashboard';
 
+// Add some basic styles
+const styles = document.createElement('style');
+styles.textContent = `
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+`;
+document.head.appendChild(styles);
+
 const container = document.getElementById('root');
 if (!container) throw new Error('Root element not found');
 
@@ -10,13 +21,18 @@ root.render(
   <React.StrictMode>
     <div style={{ 
       display: 'flex', 
+      flexDirection: 'column',
       justifyContent: 'center', 
       alignItems: 'center', 
       minHeight: '100vh',
       background: '#f5f5f5',
-      padding: '2rem'
+      gap: '1rem'
     }}>
-      <Dashboard />
+      <h1>Dashboard Demo</h1>
+      <p>A simple dashboard component demo 📊</p>
+      <div style={{ width: '100%', maxWidth: '800px', padding: '2rem' }}>
+        <Dashboard />
+      </div>
     </div>
   </React.StrictMode>
 ); 

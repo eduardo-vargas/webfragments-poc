@@ -27,10 +27,10 @@ const libEntries = {
 };
 
 // Demo entries are only used in production builds
-const demoEntries = IS_PROD ? {
-  'party-button/demo/index': resolve(__dirname, 'src/fragments/party-button/dev/main.tsx'),
-  'dashboard/demo/index': resolve(__dirname, 'src/fragments/dashboard/dev/main.tsx')
-} : {};
+const demoEntries = {
+  'party-button/demo/index': resolve(__dirname, 'src/fragments/party-button/dev/index.html'),
+  'dashboard/demo/index': resolve(__dirname, 'src/fragments/dashboard/dev/index.html')
+};
 
 // Build configuration
 export default defineConfig({
@@ -40,10 +40,10 @@ export default defineConfig({
     outDir: 'dist',
     emptyOutDir: true,
     rollupOptions: {
-      input: IS_PROD ? {
+      input: {
         ...libEntries,
         ...demoEntries
-      } : libEntries,
+      },
       external: ['react', 'react-dom'],
       output: {
         globals: {
@@ -51,14 +51,15 @@ export default defineConfig({
           'react-dom': 'ReactDOM'
         },
         entryFileNames: (chunkInfo) => {
-          if (chunkInfo.name?.includes('/demo')) {
-            return '[name]/index.js';
+          if (chunkInfo.name?.includes('/demo/')) {
+            return 'assets/[name]-[hash].js';
           }
           return '[name].js';
         },
         assetFileNames: (assetInfo) => {
           if (assetInfo.name?.endsWith('.html')) {
-            return '[name]/index.html';
+            const name = assetInfo.name.replace('/dev/', '/demo/');
+            return name;
           }
           return 'assets/[name]-[hash].[ext]';
         }
