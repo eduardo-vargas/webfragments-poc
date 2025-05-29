@@ -34,7 +34,9 @@
   ],
   "scripts": {
     "dev": "vite --port 3001",
-    "build": "pnpm run clean && tsc && vite build",
+    "build": "pnpm run clean && tsc && pnpm run build:lib && pnpm run build:demos",
+    "build:lib": "vite build",
+    "build:demos": "vite build src/fragments/party-button/demo && vite build src/fragments/dashboard/demo",
     "clean": "rm -rf dist",
     "serve:party-button": "vite serve src/fragments/party-button/demo --port 3002",
     "serve:dashboard": "vite serve src/fragments/dashboard/demo --port 3003",
