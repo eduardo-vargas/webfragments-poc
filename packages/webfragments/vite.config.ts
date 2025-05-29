@@ -48,8 +48,6 @@ export default defineConfig({
           server.middlewares.use(async (req, res, next) => {
             if (!req.url) return next();
 
-            console.log('Request URL:', req.url);
-
             // Handle demo routes
             const demoMatch = req.url.match(/^\/(party-button|dashboard)\/demo\/?$/);
             if (demoMatch) {
@@ -113,7 +111,7 @@ export default defineConfig({
         entryFileNames: (chunkInfo) => {
           // Keep demo files in their respective directories
           if (chunkInfo.name.includes('/demo/')) {
-            return `${chunkInfo.name}.js`;
+            return `${chunkInfo.name.replace('.tsx', '')}.js`;
           }
           return '[name].js';
         },
