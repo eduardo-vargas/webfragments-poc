@@ -51,6 +51,9 @@ export default defineConfig({
       include: [/@webfragments\/core/, /node_modules/]
     },
     outDir: 'dist',
-    emptyOutDir: true
+    emptyOutDir: true,
+    rollupOptions: {
+      external: ['@remix-run/router']
+    }
   }
 }); 
