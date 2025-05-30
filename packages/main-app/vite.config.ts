@@ -7,18 +7,21 @@ import { resolve } from 'path';
 // Initialize the gateway
 const gateway = new FragmentGateway();
 
+const isDev = process.env.NODE_ENV !== 'production';
+const baseUrl = isDev ? 'http://localhost:3001' : 'https://eduardo-vargas.github.io/webfragments-poc';
+
 // Register our fragments with their full URLs
 gateway.registerFragment({
   fragmentId: 'party-button',
   piercingClassNames: ['party-button', 'confetti-piece'],
-  endpoint: 'https://eduardo-vargas.github.io/webfragments-poc/fragments/party-button/demo/index.html',
+  endpoint: `${baseUrl}/fragments/party-button/demo/index.html`,
   routePatterns: ['/fragment-demo']
 });
 
 gateway.registerFragment({
   fragmentId: 'dashboard',
   piercingClassNames: [],
-  endpoint: 'https://eduardo-vargas.github.io/webfragments-poc/fragments/dashboard/demo/index.html',
+  endpoint: `${baseUrl}/fragments/dashboard/demo/index.html`,
   routePatterns: ['/dashboard']
 });
 
@@ -50,6 +53,12 @@ export default defineConfig({
   },
   server: {
     port: 3000,
-    open: true
+    open: true,
+    cors: true,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+      'Access-Control-Allow-Headers': 'X-Requested-With, content-type, Authorization'
+    }
   }
 }); 
