@@ -13,6 +13,7 @@ permissions:
   contents: read
   pages: write
   id-token: write
+  actions: write
 
 concurrency:
   group: "fragments"
@@ -142,4 +143,20 @@ jobs:
             url="${{ steps.deployment.outputs.page_url }}${path}"
             code=$(curl -s -o /dev/null -w "%{http_code}" "$url")
             echo "Checking $url - Status: $code"
-          done 
+          done
+
+  trigger-main-app:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Main App Workflow
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'deploy-main.yml',
+              ref: 'main'
+            }); 
