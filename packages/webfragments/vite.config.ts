@@ -8,21 +8,39 @@ export default defineConfig(({ mode }) => {
   const isProd = process.env.NODE_ENV === 'production';
   const baseUrl = isProd ? '/webfragments-poc/fragments/' : '/';
 
+  // Demo entries configuration
+  const fragments = ['party-button', 'dashboard'];
+  const demoEntries = Object.fromEntries(
+    fragments.map(fragment => [
+      // Only include the HTML entry point
+      `${fragment}/demo/index`, resolve(__dirname, `src/fragments/${fragment}/demo/index.html`)
+    ])
+  );
+
+  // Library entries
+  const libEntries = {
+    'index': resolve(__dirname, 'src/index.ts'),
+    'elements': resolve(__dirname, 'src/elements.ts'),
+    'party-button/index': resolve(__dirname, 'src/fragments/party-button/index.ts'),
+    'dashboard/index': resolve(__dirname, 'src/fragments/dashboard/index.ts')
+  };
+
   return {
     base: baseUrl,
     plugins: [
       react(),
       {
-        name: 'resolve-tsx-as-js',
-        resolveId(source) {
-          if (!source.endsWith('.js')) return null;
-          
-          // Try to find corresponding tsx file
-          const tsxPath = source.replace('.js', '.tsx');
-          const resolvedPath = resolve(__dirname, tsxPath.startsWith('/') ? tsxPath.slice(1) : tsxPath);
-          
-          if (fs.existsSync(resolvedPath)) {
-            return resolvedPath;
+        name: 'handle-ts-extension',
+        resolveId(source, importer) {
+          // Only handle .js imports in development
+          if (!isProd && source.endsWith('.js')) {
+            // Try .ts version of the file
+            const tsSource = source.replace(/\.js$/, '.ts');
+            const resolved = resolve(importer ? resolve(importer, '..') : __dirname, tsSource);
+            
+            if (fs.existsSync(resolved)) {
+              return resolved;
+            }
           }
           return null;
         }
@@ -32,28 +50,14 @@ export default defineConfig(({ mode }) => {
       outDir: 'dist',
       emptyOutDir: !isDemoMode,
       rollupOptions: {
-        input: isDemoMode ? {
-          'party-button/demo/index': resolve(__dirname, 'src/fragments/party-button/demo/index.html'),
-          'dashboard/demo/index': resolve(__dirname, 'src/fragments/dashboard/demo/index.html')
-        } : {
-          'index': resolve(__dirname, 'src/index.ts'),
-          'elements': resolve(__dirname, 'src/elements.ts'),
-          'party-button/index': resolve(__dirname, 'src/fragments/party-button/index.ts'),
-          'dashboard/index': resolve(__dirname, 'src/fragments/dashboard/index.ts')
-        },
+        input: isDemoMode ? demoEntries : libEntries,
         external: ['react', 'react-dom'],
         output: {
           globals: {
             react: 'React',
             'react-dom': 'ReactDOM'
           },
-          entryFileNames: (chunkInfo) => {
-            // For demo entries, preserve the path structure
-            if (chunkInfo.name.includes('/demo/')) {
-              return '[name].js';
-            }
-            return '[name].js';
-          },
+          entryFileNames: '[name].js',
           assetFileNames: (assetInfo) => {
             // Keep HTML files in their original path structure
             if (assetInfo.name?.endsWith('.html')) {

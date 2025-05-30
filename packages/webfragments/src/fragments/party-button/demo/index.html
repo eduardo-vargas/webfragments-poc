@@ -9,6 +9,19 @@
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="./main.js"></script>
+    <script type="module">
+      import { initializeWebFragments, registerFragment } from '../../../elements.js';
+      import PartyButton from '../index.js';
+
+      // Initialize web fragments and register the party button
+      initializeWebFragments();
+      registerFragment('party-button', PartyButton);
+
+      // Create a simple demo component
+      const container = document.getElementById('root');
+      const fragment = document.createElement('web-fragment');
+      fragment.setAttribute('fragment-id', 'party-button');
+      container.appendChild(fragment);
+    </script>
   </body>
 </html> 
