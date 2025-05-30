@@ -71,8 +71,17 @@ jobs:
           # Copy the main app build (will merge with fragments)
           cp -r packages/main-app/dist/* tmp_deployment/
           
+          # Ensure the assets directory exists
+          mkdir -p tmp_deployment/assets
+          
+          # Copy all assets from main app
+          cp -r packages/main-app/dist/assets/* tmp_deployment/assets/
+          
           echo "📦 Final deployment structure:"
           tree tmp_deployment
+          
+          echo "\n📄 Final index.html contents:"
+          cat tmp_deployment/index.html
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
