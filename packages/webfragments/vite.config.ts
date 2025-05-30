@@ -12,8 +12,8 @@ export default defineConfig(({ mode }) => {
   const fragments = ['party-button', 'dashboard'];
   const demoEntries = Object.fromEntries(
     fragments.map(fragment => [
-      // Keep the full source path in the entry name
-      `src/fragments/${fragment}/demo/index`, resolve(__dirname, `src/fragments/${fragment}/demo/index.html`)
+      // Keep the simple structure: fragment/demo/index
+      `${fragment}/demo/index`, resolve(__dirname, `src/fragments/${fragment}/demo/index.html`)
     ])
   );
 
@@ -66,18 +66,16 @@ export default defineConfig(({ mode }) => {
             react: 'React',
             'react-dom': 'ReactDOM'
           },
-          entryFileNames: (chunkInfo) => {
-            // For demo entries, preserve the full path structure
-            if (isDemoMode && chunkInfo.facadeModuleId?.endsWith('.html')) {
-              const dir = chunkInfo.name.substring(0, chunkInfo.name.lastIndexOf('/'));
-              return `${dir}/main.js`;
-            }
-            return '[name].js';
-          },
+          entryFileNames: '[name].js',
           assetFileNames: (assetInfo) => {
-            // Keep HTML files in their original path structure
+            // Keep HTML files in the same structure as JS files
             if (assetInfo.name?.endsWith('.html')) {
-              return '[name].[ext]';
+              const filePath = assetInfo.name;
+              const match = filePath.match(/src\/fragments\/([^\/]+)\/demo\/(.+)$/);
+              if (match) {
+                const [, fragment, fileName] = match;
+                return `${fragment}/demo/${fileName}`;
+              }
             }
             return 'assets/[name]-[hash].[ext]';
           },
