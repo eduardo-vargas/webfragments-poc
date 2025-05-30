@@ -89,6 +89,12 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
+      - name: Print Deployment URLs
+        run: |
+          echo "📋 Main App URLs:"
+          echo "https://eduardo-vargas.github.io/webfragments-poc/index.html"
+          echo "https://eduardo-vargas.github.io/webfragments-poc/"
+
       - name: Display Deployment URL
         run: |
           echo "🚀 Main App has been deployed!"
