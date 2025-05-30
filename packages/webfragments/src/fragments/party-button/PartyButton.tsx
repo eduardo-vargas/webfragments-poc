@@ -22,33 +22,65 @@ const PartyButton: React.FC = () => {
   console.log('[PartyButton] Component mounted');
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    const button = event.currentTarget;
-    const rect = button.getBoundingClientRect();
+    console.log('[PartyButton] Button clicked');
     
-    // Get the shadow root and its host element
-    const shadowRoot = button.closest('web-fragment')?.shadowRoot;
-    const host = shadowRoot?.host;
-    
-    if (host) {
-      // Get the host element's position
-      const hostRect = host.getBoundingClientRect();
+    try {
+      const button = event.currentTarget;
+      console.log('[PartyButton] Button element:', button);
       
-      // Calculate the origin point relative to the viewport
-      const x = (hostRect.left + rect.width / 2) / window.innerWidth;
-      const y = (hostRect.top + rect.height / 2) / window.innerHeight;
+      const rect = button.getBoundingClientRect();
+      console.log('[PartyButton] Button rect:', rect);
       
-      console.log('[PartyButton] Click detected at position:', { x, y });
+      // Get the shadow root and its host element
+      const shadowRoot = button.closest('web-fragment')?.shadowRoot;
+      const host = shadowRoot?.host;
+      console.log('[PartyButton] Web fragment host:', host);
       
-      confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { x, y },
-        startVelocity: 30,
-        gravity: 1.5,
-        ticks: 200,
-        shapes: ['square', 'circle'],
-        colors: ['#FF6633', '#FFA07A', '#FFD700', '#FF8C00']
-      });
+      if (host) {
+        // Get the host element's position
+        const hostRect = host.getBoundingClientRect();
+        console.log('[PartyButton] Host rect:', hostRect);
+        
+        // Calculate the origin point relative to the viewport
+        const x = (hostRect.left + rect.width / 2) / window.innerWidth;
+        const y = (hostRect.top + rect.height / 2) / window.innerHeight;
+        console.log('[PartyButton] Calculated position:', { x, y });
+        
+        // Create a canvas for confetti if it doesn't exist
+        let canvas = document.querySelector('canvas.confetti-canvas') as HTMLCanvasElement;
+        if (!canvas) {
+          canvas = document.createElement('canvas');
+          canvas.className = 'confetti-canvas';
+          canvas.style.position = 'fixed';
+          canvas.style.top = '0';
+          canvas.style.left = '0';
+          canvas.style.width = '100%';
+          canvas.style.height = '100%';
+          canvas.style.pointerEvents = 'none';
+          canvas.style.zIndex = '999999';
+          document.body.appendChild(canvas);
+        }
+        
+        // Initialize confetti with the canvas
+        const myConfetti = confetti.create(canvas, {
+          resize: true,
+          useWorker: true
+        });
+        
+        console.log('[PartyButton] Launching confetti');
+        myConfetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { x, y },
+          startVelocity: 30,
+          gravity: 1.5,
+          ticks: 200,
+          shapes: ['square', 'circle'],
+          colors: ['#FF6633', '#FFA07A', '#FFD700', '#FF8C00']
+        });
+      }
+    } catch (error) {
+      console.error('[PartyButton] Error in click handler:', error);
     }
   };
 
