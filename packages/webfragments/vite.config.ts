@@ -32,14 +32,23 @@ export default defineConfig(({ mode }) => {
       {
         name: 'handle-ts-extension',
         resolveId(source, importer) {
-          // Only handle .js imports in development
-          if (!isProd && source.endsWith('.js')) {
-            // Try .ts version of the file
-            const tsSource = source.replace(/\.js$/, '.ts');
-            const resolved = resolve(importer ? resolve(importer, '..') : __dirname, tsSource);
-            
-            if (fs.existsSync(resolved)) {
-              return resolved;
+          // Skip if no importer (entry point) or not a .js file
+          if (!importer || !source.endsWith('.js')) return null;
+
+          // Handle both development and production paths
+          if (source.startsWith('../../../')) {
+            // Resolve root-level imports (e.g., ../../../elements.js)
+            const normalizedSource = source.replace('../../../', '');
+            const targetPath = resolve(__dirname, 'src', normalizedSource.replace('.js', '.ts'));
+            if (fs.existsSync(targetPath)) {
+              return targetPath;
+            }
+          } else if (source.startsWith('../')) {
+            // Resolve fragment-level imports (e.g., ../index.js)
+            const importerDir = resolve(importer, '..');
+            const targetPath = resolve(importerDir, source.replace('.js', '.ts'));
+            if (fs.existsSync(targetPath)) {
+              return targetPath;
             }
           }
           return null;
