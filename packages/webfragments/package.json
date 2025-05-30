@@ -34,9 +34,10 @@
   ],
   "scripts": {
     "dev": "vite --port 3001",
-    "build": "pnpm run clean && tsc && pnpm run build:lib && pnpm run build:demos",
+    "build": "pnpm run clean && pnpm run build:types && pnpm run build:lib && pnpm run build:demos",
+    "build:types": "tsc --emitDeclarationOnly --outDir dist/types",
     "build:lib": "vite build",
-    "build:demos": "vite build src/fragments/party-button/demo && vite build src/fragments/dashboard/demo",
+    "build:demos": "vite build --mode demo",
     "clean": "rm -rf dist",
     "serve:party-button": "cd src/fragments/party-button/demo && vite --config ../../../../vite.config.ts --port 3002",
     "serve:dashboard": "cd src/fragments/dashboard/demo && vite --config ../../../../vite.config.ts --port 3003",
