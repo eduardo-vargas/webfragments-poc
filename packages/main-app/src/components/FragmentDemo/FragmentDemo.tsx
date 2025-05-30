@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
+const FRAGMENT_URL = 'https://eduardo-vargas.github.io/webfragments-poc/fragments/party-button/demo/index.html';
+
 export const FragmentDemo: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
@@ -34,7 +36,19 @@ export const FragmentDemo: React.FC = () => {
         margin: '20px 0',
         backgroundColor: '#f9f9f9'
       }}>
-        <web-fragment fragment-id="party-button">
+        <p style={{ 
+          fontFamily: 'monospace', 
+          backgroundColor: '#eee', 
+          padding: '10px', 
+          borderRadius: '4px',
+          wordBreak: 'break-all'
+        }}>
+          Loading fragment from: {FRAGMENT_URL}
+        </p>
+        <web-fragment 
+          fragment-id="party-button"
+          src={FRAGMENT_URL}
+        >
           {isLoading && <div slot="loading">Loading Party Button...</div>}
           {hasError && <div slot="error">Failed to load Party Button</div>}
         </web-fragment>

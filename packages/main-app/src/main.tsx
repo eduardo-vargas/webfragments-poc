@@ -1,40 +1,30 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { initializeWebFragments, registerFragment } from '@webfragments/core/elements';
-import PartyButton from '@webfragments/core/fragments/party-button';
-import Dashboard from '@webfragments/core/fragments/dashboard';
+import { initializeWebFragments } from 'web-fragments';
 import { Layout } from './components/Layout/Layout';
 import { Home } from './components/Home/Home';
 import { FragmentDemo } from './components/FragmentDemo/FragmentDemo';
-import { Dashboard as DashboardPage } from './components/Dashboard/Dashboard';
+import { Dashboard } from './components/Dashboard/Dashboard';
 
-// Initialize web fragments before rendering
+// Initialize web fragments
 initializeWebFragments();
-
-// Register fragments
-console.log('[Main] Registering party-button fragment');
-registerFragment('party-button', PartyButton);
-console.log('[Main] Party button fragment registered');
-
-console.log('[Main] Registering dashboard fragment');
-registerFragment('dashboard', Dashboard);
-console.log('[Main] Dashboard fragment registered');
-
-// Get base path for GitHub Pages
-const BASE_PATH = import.meta.env.DEV ? '' : '/webfragments-poc';
 
 // Create the root element
 const root = ReactDOM.createRoot(document.getElementById('root')!);
 
+// Get the base URL from the environment
+const isDev = !window.location.href.includes('github.io');
+const basename = isDev ? '' : '/webfragments-poc';
+
 // Render the app
 root.render(
   <React.StrictMode>
-    <Router basename={BASE_PATH}>
+    <Router basename={basename}>
       <Layout>
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/fragment-demo" element={<FragmentDemo />} />
         </Routes>
       </Layout>

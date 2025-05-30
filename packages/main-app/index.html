@@ -33,8 +33,10 @@
       }
     </script>
     <script>
-      // Select the appropriate importmap based on environment
+      // Determine environment
       const isDev = !window.location.href.includes('github.io');
+
+      // Select the appropriate importmap based on environment
       const importmaps = document.querySelectorAll('script[type="importmap"]');
       importmaps.forEach(map => {
         if ((isDev && map.hasAttribute('data-development')) || 
@@ -61,7 +63,7 @@
     <div id="root"></div>
     <script>
       // Dynamically set the correct script source based on environment
-      const scriptSrc = !window.location.href.includes('github.io') 
+      const scriptSrc = isDev 
         ? '/src/main.tsx'
         : '/webfragments-poc/assets/index.js';
       
