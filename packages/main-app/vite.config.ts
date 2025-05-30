@@ -38,7 +38,9 @@ export default defineConfig({
       'react-router-dom',
       '@remix-run/router',
       'react-router',
-      'scheduler'
+      'scheduler',
+      'react',
+      'react-dom'
     ]
   },
   css: {
@@ -53,14 +55,11 @@ export default defineConfig({
     outDir: 'dist',
     emptyOutDir: true,
     rollupOptions: {
-      external: [
-        '@remix-run/router',
-        'scheduler',
-        'react',
-        'react-dom',
-        'react-router',
-        'react-router-dom'
-      ]
+      output: {
+        entryFileNames: 'assets/[name]-[hash].js',
+        chunkFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]'
+      }
     }
   }
 }); 
