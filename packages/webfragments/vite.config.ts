@@ -12,8 +12,8 @@ export default defineConfig(({ mode }) => {
   const fragments = ['party-button', 'dashboard'];
   const demoEntries = Object.fromEntries(
     fragments.map(fragment => [
-      // Only include the HTML entry point
-      `${fragment}/demo/index`, resolve(__dirname, `src/fragments/${fragment}/demo/index.html`)
+      // Keep the full source path in the entry name
+      `src/fragments/${fragment}/demo/index`, resolve(__dirname, `src/fragments/${fragment}/demo/index.html`)
     ])
   );
 
@@ -66,7 +66,14 @@ export default defineConfig(({ mode }) => {
             react: 'React',
             'react-dom': 'ReactDOM'
           },
-          entryFileNames: '[name].js',
+          entryFileNames: (chunkInfo) => {
+            // For demo entries, preserve the full path structure
+            if (isDemoMode && chunkInfo.facadeModuleId?.endsWith('.html')) {
+              const dir = chunkInfo.name.substring(0, chunkInfo.name.lastIndexOf('/'));
+              return `${dir}/main.js`;
+            }
+            return '[name].js';
+          },
           assetFileNames: (assetInfo) => {
             // Keep HTML files in their original path structure
             if (assetInfo.name?.endsWith('.html')) {
