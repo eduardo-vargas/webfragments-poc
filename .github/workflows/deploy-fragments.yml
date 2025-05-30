@@ -51,38 +51,52 @@ jobs:
       - name: Install Dependencies
         run: pnpm install
 
+      - name: Inspect Source Structure
+        run: |
+          echo "📂 Source directory structure:"
+          tree packages/webfragments/src
+          
+          echo "\n📄 Demo HTML contents:"
+          for fragment in party-button dashboard; do
+            echo "\n=== $fragment demo/index.html ==="
+            cat "packages/webfragments/src/fragments/$fragment/demo/index.html"
+          done
+
       - name: Build Fragments
         run: |
           export NODE_ENV=production
           pnpm --filter @webfragments/core run build
 
+      - name: Inspect Build Output
+        run: |
+          echo "📦 Build output structure:"
+          tree packages/webfragments/dist
+          
+          echo "\n📄 Built demo HTML contents:"
+          find packages/webfragments/dist -name "index.html" -exec sh -c '
+            echo "\n=== {} ===";
+            cat "{}"
+          ' \;
+
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
-      - name: Prepare deployment directory
+      - name: Prepare Deployment
         run: |
           # Create a temporary directory
-          mkdir -p tmp_deployment
-          
-          # Create the fragments directory
           mkdir -p tmp_deployment/fragments
           
           # Copy the new fragments build
           cp -r packages/webfragments/dist/* tmp_deployment/fragments/
           
-          # List the contents of the deployment directory for verification
-          echo "📦 Deployment directory contents:"
-          ls -R tmp_deployment/fragments/
+          echo "📦 Final deployment structure:"
+          tree tmp_deployment
           
-          # Ensure demo HTML files are in the correct location
-          for fragment in party-button dashboard; do
-            mkdir -p "tmp_deployment/fragments/$fragment/demo"
-            if [ -f "tmp_deployment/fragments/$fragment/demo/index.html" ]; then
-              echo "Demo HTML found for $fragment"
-            else
-              echo "Warning: Demo HTML not found for $fragment"
-            fi
-          done
+          echo "\n📄 Final demo HTML locations:"
+          find tmp_deployment -name "index.html" -exec sh -c '
+            echo "\n=== {} ===";
+            cat "{}"
+          ' \;
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
@@ -100,20 +114,20 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
-      - name: Verify and Display Deployment URLs
+      - name: Verify Deployment
         run: |
           echo "🚀 Fragments have been deployed!"
-          echo "📍 Access your fragments at:"
-          echo "🖥️ Party Button Demo: ${{ steps.deployment.outputs.page_url }}fragments/party-button/demo/"
-          echo "🖥️ Dashboard Demo: ${{ steps.deployment.outputs.page_url }}fragments/dashboard/demo/"
-          echo "📦 Party Button Module: ${{ steps.deployment.outputs.page_url }}fragments/party-button/index.js"
-          echo "📦 Dashboard Module: ${{ steps.deployment.outputs.page_url }}fragments/dashboard/index.js"
+          echo "📍 Checking deployment URLs:"
           
-          # Verify the deployed files
-          echo "🔍 Verifying deployed files..."
-          for url in \
-            "${{ steps.deployment.outputs.page_url }}fragments/party-button/index.js" \
-            "${{ steps.deployment.outputs.page_url }}fragments/dashboard/index.js"; do
+          urls=(
+            "fragments/party-button/demo/index.html"
+            "fragments/dashboard/demo/index.html"
+            "fragments/party-button/index.js"
+            "fragments/dashboard/index.js"
+          )
+          
+          for path in "${urls[@]}"; do
+            url="${{ steps.deployment.outputs.page_url }}${path}"
             code=$(curl -s -o /dev/null -w "%{http_code}" "$url")
             echo "Checking $url - Status: $code"
           done 
