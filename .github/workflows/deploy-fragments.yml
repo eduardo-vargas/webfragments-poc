@@ -83,9 +83,11 @@ jobs:
 
       - name: Prepare Deployment
         run: |
-          # Create temporary directory and copy build output
-          mkdir -p tmp_deployment/fragments
-          cp -r packages/webfragments/dist/* tmp_deployment/fragments/
+          # Create temporary directory
+          mkdir -p tmp_deployment
+          
+          # Copy build output, preserving directory structure
+          cp -r packages/webfragments/dist/* tmp_deployment/
           
           echo "📦 Final deployment structure:"
           tree tmp_deployment
@@ -112,6 +114,16 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
+      - name: Print Deployment URLs
+        run: |
+          echo "📋 Deployment URLs:"
+          echo "https://eduardo-vargas.github.io/webfragments-poc/fragments/party-button/demo/index.html"
+          echo "https://eduardo-vargas.github.io/webfragments-poc/fragments/dashboard/demo/index.html"
+          echo "https://eduardo-vargas.github.io/webfragments-poc/fragments/party-button/index.js"
+          echo "https://eduardo-vargas.github.io/webfragments-poc/fragments/dashboard/index.js"
+          echo "https://eduardo-vargas.github.io/webfragments-poc/elements.js"
+          echo "https://eduardo-vargas.github.io/webfragments-poc/index.js"
+
       - name: Verify Deployment
         run: |
           echo "🚀 Fragments have been deployed!"
@@ -122,6 +134,8 @@ jobs:
             "fragments/dashboard/demo/index.html"
             "fragments/party-button/index.js"
             "fragments/dashboard/index.js"
+            "elements.js"
+            "index.js"
           )
           
           for path in "${urls[@]}"; do
