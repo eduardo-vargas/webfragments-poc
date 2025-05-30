@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 
-const FRAGMENT_URL = 'https://eduardo-vargas.github.io/webfragments-poc/fragments/party-button/demo/index.html';
+const isDev = process.env.NODE_ENV !== 'production';
+const FRAGMENT_URL = isDev 
+  ? 'http://localhost:3002/index.html'
+  : 'https://eduardo-vargas.github.io/webfragments-poc/fragments/party-button/demo/index.html';
 
 export const FragmentDemo: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
