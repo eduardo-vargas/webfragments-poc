@@ -1,9 +1,13 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import confetti from 'canvas-confetti';
 
 console.log('[PartyButton] Loading component version with position-based confetti');
 
 const styles = {
+  container: {
+    position: 'relative' as const,
+    display: 'inline-block'
+  },
   button: {
     padding: '1rem 2rem',
     fontSize: '1.2rem',
@@ -15,11 +19,43 @@ const styles = {
     cursor: 'pointer',
     transition: 'all 0.2s ease',
     position: 'relative' as const
+  },
+  canvas: {
+    position: 'fixed' as const,
+    top: '0',
+    left: '0',
+    width: '100%',
+    height: '100%',
+    pointerEvents: 'none' as const,
+    zIndex: 999999
   }
 } as const;
 
 const PartyButton: React.FC = () => {
   console.log('[PartyButton] Component mounted');
+  const containerRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  useEffect(() => {
+    // Create canvas on mount
+    const canvas = document.createElement('canvas');
+    canvas.className = 'confetti-canvas';
+    Object.assign(canvas.style, styles.canvas);
+    canvasRef.current = canvas;
+
+    // Find the root node (either shadow root or document body)
+    const container = containerRef.current;
+    if (container) {
+      const root = container.getRootNode() as Document | ShadowRoot;
+      root.appendChild(canvas);
+    }
+
+    // Cleanup on unmount
+    return () => {
+      canvas.remove();
+      canvasRef.current = null;
+    };
+  }, []);
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     console.log('[PartyButton] Button clicked');
@@ -31,24 +67,20 @@ const PartyButton: React.FC = () => {
       const rect = button.getBoundingClientRect();
       console.log('[PartyButton] Button rect:', rect);
 
-      // Calculate the origin point relative to the viewport directly from the button's position
+      // Get the container's root node
+      const container = containerRef.current;
+      if (!container) return;
+      
+      // Calculate position relative to the viewport for better scaling
       const x = (rect.left + rect.width / 2) / window.innerWidth;
       const y = (rect.top + rect.height / 2) / window.innerHeight;
-      console.log('[PartyButton] Calculated position:', { x, y });
+      console.log('[PartyButton] Calculated position:', { x, y, viewportWidth: window.innerWidth, viewportHeight: window.innerHeight });
       
-      // Create a canvas for confetti if it doesn't exist
-      let canvas = document.querySelector<HTMLCanvasElement>('canvas.confetti-canvas');
+      // Use the canvas we created on mount
+      const canvas = canvasRef.current;
       if (!canvas) {
-        canvas = document.createElement('canvas');
-        canvas.className = 'confetti-canvas';
-        canvas.style.position = 'fixed';
-        canvas.style.top = '0';
-        canvas.style.left = '0';
-        canvas.style.width = '100%';
-        canvas.style.height = '100%';
-        canvas.style.pointerEvents = 'none';
-        canvas.style.zIndex = '999999';
-        document.body.appendChild(canvas);
+        console.error('[PartyButton] Canvas not found');
+        return;
       }
       
       // Initialize confetti with the canvas
@@ -56,12 +88,14 @@ const PartyButton: React.FC = () => {
       
       console.log('[PartyButton] Launching confetti');
       myConfetti({
-        particleCount: 100,
-        spread: 70,
+        particleCount: 250,
+        spread: 40,
         origin: { x, y },
-        startVelocity: 30,
+        startVelocity: 45,
         gravity: 1.5,
-        ticks: 200,
+        scalar: 0.3,
+        ticks: 150,
+        decay: 0.88,
         shapes: ['square', 'circle'],
         colors: ['#FF6633', '#FFA07A', '#FFD700', '#FF8C00']
       }).then(() => {
@@ -74,7 +108,10 @@ const PartyButton: React.FC = () => {
     }
   };
 
-  return React.createElement('button', {
+  return React.createElement('div', {
+    ref: containerRef,
+    style: styles.container
+  }, React.createElement('button', {
     style: styles.button,
     onMouseEnter: (e: React.MouseEvent<HTMLButtonElement>) => {
       const target = e.currentTarget;
@@ -88,7 +125,7 @@ const PartyButton: React.FC = () => {
     },
     onClick: handleClick,
     children: 'Hello world! 👋🏼'
-  });
+  }));
 };
 
 export default PartyButton; 

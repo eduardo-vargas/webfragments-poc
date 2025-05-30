@@ -8,7 +8,7 @@ import { resolve } from 'path';
 const gateway = new FragmentGateway();
 
 const isDev = process.env.NODE_ENV !== 'production';
-const baseUrl = isDev ? 'http://localhost:3001' : 'https://eduardo-vargas.github.io/webfragments-poc';
+const baseUrl = isDev ? 'http://localhost:3002' : 'https://eduardo-vargas.github.io/webfragments-poc';
 
 // Register our fragments with their full URLs
 gateway.registerFragment({
