@@ -11,6 +11,7 @@ export default defineConfig(({ mode }) => {
   const isDemoMode = mode === 'demo';
   const isProd = process.env.NODE_ENV === 'production';
   const baseUrl = isProd ? '/webfragments-poc/fragments/' : '/';
+  const fragment = process.env.FRAGMENT;
 
   // Library entries
   const libEntries = {
@@ -24,13 +25,10 @@ export default defineConfig(({ mode }) => {
     )
   };
 
-  // Demo entries
-  const demoEntries = Object.fromEntries(
-    fragments.map(fragment => [
-      `${fragment}/demo/index`,
-      resolve(__dirname, `src/fragments/${fragment}/demo/index.html`)
-    ])
-  );
+  // Demo entry for the current fragment
+  const demoEntry = fragment ? {
+    [`${fragment}/demo/bundle`]: resolve(__dirname, `src/fragments/${fragment}/demo/index.ts`)
+  } : {};
 
   return {
     base: baseUrl,
@@ -42,67 +40,34 @@ export default defineConfig(({ mode }) => {
     plugins: [
       react(),
       {
-        name: 'handle-ts-extension',
-        resolveId(source, importer) {
-          if (!importer || !source.endsWith('.js')) return null;
-
-          if (source.startsWith('../../../')) {
-            const normalizedSource = source.replace('../../../', '');
-            const targetPath = resolve(__dirname, 'src', normalizedSource.replace('.js', '.ts'));
-            if (fs.existsSync(targetPath)) return targetPath;
-          } else if (source.startsWith('../')) {
-            const importerDir = resolve(importer, '..');
-            const targetPath = resolve(importerDir, source.replace('.js', '.ts'));
-            if (fs.existsSync(targetPath)) return targetPath;
-          }
-          return null;
-        }
-      },
-      {
-        name: 'demo-html',
+        name: 'handle-demo-html',
+        apply: 'build',
         enforce: 'post',
-        configResolved(config) {
-          if (!isDemoMode) return;
+        async generateBundle() {
+          if (!isDemoMode || !fragment) return;
 
-          // Process each fragment's HTML file
-          fragments.forEach(fragment => {
-            const filePath = resolve(__dirname, `src/fragments/${fragment}/demo/index.html`);
-            if (!fs.existsSync(filePath)) return;
+          const filePath = resolve(__dirname, `src/fragments/${fragment}/demo/index.html`);
+          if (!fs.existsSync(filePath)) return;
 
-            let html = fs.readFileSync(filePath, 'utf-8');
-            // Update imports to use absolute paths
-            html = html.replace(
-              /from ['"]([^'"]+)['"]/g,
-              (_, path) => {
-                if (path.startsWith('@webfragments/')) {
-                  return `from '${path}'`;
-                }
-                if (path.startsWith('../')) {
-                  const normalizedPath = path.replace(/^\.\.\/+/, '');
-                  return `from '@webfragments/${normalizedPath}'`;
-                }
-                return `from '${path}'`;
-              }
+          let html = fs.readFileSync(filePath, 'utf-8');
+
+          // Update HTML to use the bundle
+          html = html
+            .replace(/<script type="module">[\s\S]*?<\/script>/g, '')  // Remove the module script
+            .replace(
+              /<\/body>/,
+              `  <script src="/${fragment}/demo/bundle.js"></script>
+               </body>`
             );
 
-            // Write the HTML file directly to the output directory
-            const outDir = config.build.outDir || 'dist';
-            const outPath = resolve(outDir, fragment, 'demo');
-            if (!fs.existsSync(outPath)) {
-              fs.mkdirSync(outPath, { recursive: true });
-            }
-            fs.writeFileSync(resolve(outPath, 'index.html'), html);
-          });
-        },
-        closeBundle() {
-          if (!isDemoMode) return;
-
-          // Clean up old HTML files
-          const outDir = resolve(__dirname, 'dist');
-          const srcDir = resolve(outDir, 'src');
-          if (fs.existsSync(srcDir)) {
-            fs.rmSync(srcDir, { recursive: true, force: true });
+          // Create output directory
+          const outPath = resolve(__dirname, 'dist', fragment, 'demo');
+          if (!fs.existsSync(outPath)) {
+            fs.mkdirSync(outPath, { recursive: true });
           }
+
+          // Write HTML file
+          fs.writeFileSync(resolve(outPath, 'index.html'), html);
         }
       } as Plugin
     ],
@@ -110,13 +75,9 @@ export default defineConfig(({ mode }) => {
       outDir: 'dist',
       emptyOutDir: !isDemoMode,
       rollupOptions: {
-        input: isDemoMode ? demoEntries : libEntries,
-        external: ['react', 'react-dom'],
+        input: isDemoMode ? demoEntry : libEntries,
         output: {
-          globals: {
-            react: 'React',
-            'react-dom': 'ReactDOM'
-          },
+          format: isDemoMode ? 'iife' : 'es',
           entryFileNames: '[name].js',
           chunkFileNames: 'chunks/[name]-[hash].js',
           assetFileNames: 'assets/[name]-[hash].[ext]'
