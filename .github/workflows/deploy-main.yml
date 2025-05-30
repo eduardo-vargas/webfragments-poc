@@ -65,13 +65,14 @@ jobs:
           # Create a temporary directory
           mkdir -p tmp_deployment
           
-          # Copy the main app build
+          # Copy the fragments build first
+          cp -r packages/webfragments/dist/* tmp_deployment/
+          
+          # Copy the main app build (will merge with fragments)
           cp -r packages/main-app/dist/* tmp_deployment/
           
-          # Try to download and preserve fragments
-          mkdir -p tmp_deployment/fragments
-          curl -L "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/fragments/party-button/index.js" -o tmp_deployment/fragments/party-button/index.js || true
-          curl -L "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/fragments/dashboard/index.js" -o tmp_deployment/fragments/dashboard/index.js || true
+          echo "📦 Final deployment structure:"
+          tree tmp_deployment
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
