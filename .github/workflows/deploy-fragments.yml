@@ -83,25 +83,9 @@ jobs:
 
       - name: Prepare Deployment
         run: |
-          # Create temporary directory
+          # Create temporary directory and copy build output
           mkdir -p tmp_deployment/fragments
-          
-          # Copy library files (modules, chunks, etc.)
-          cp -r packages/webfragments/dist/chunks tmp_deployment/fragments/
-          cp packages/webfragments/dist/elements.js tmp_deployment/fragments/
-          cp packages/webfragments/dist/index.js tmp_deployment/fragments/
-          
-          # Copy fragment modules and demos
-          for fragment in party-button dashboard; do
-            # Copy the fragment module
-            mkdir -p "tmp_deployment/fragments/$fragment"
-            cp "packages/webfragments/dist/$fragment/index.js" "tmp_deployment/fragments/$fragment/"
-            
-            # Copy and relocate the demo files
-            mkdir -p "tmp_deployment/fragments/$fragment/demo"
-            cp "packages/webfragments/dist/$fragment/demo/index.js" "tmp_deployment/fragments/$fragment/demo/"
-            cp "packages/webfragments/dist/src/fragments/$fragment/demo/index.html" "tmp_deployment/fragments/$fragment/demo/"
-          done
+          cp -r packages/webfragments/dist/* tmp_deployment/fragments/
           
           echo "📦 Final deployment structure:"
           tree tmp_deployment

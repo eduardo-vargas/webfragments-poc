@@ -68,7 +68,7 @@ export default defineConfig(({ mode }) => {
           },
           entryFileNames: '[name].js',
           assetFileNames: (assetInfo) => {
-            // Keep HTML files in the same structure as JS files
+            // Keep HTML files in the same structure as their JS files
             if (assetInfo.name?.endsWith('.html')) {
               const filePath = assetInfo.name;
               const match = filePath.match(/src\/fragments\/([^\/]+)\/demo\/(.+)$/);
