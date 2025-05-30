@@ -4,18 +4,47 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>WebFragments Demo</title>
-    <script type="importmap">
+    <!-- Development importmap - will be ignored in production -->
+    <script type="importmap" data-development>
       {
         "imports": {
-          "react": "https://esm.sh/react@18.2.0",
-          "react-dom": "https://esm.sh/react-dom@18.2.0",
-          "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
-          "react-router": "https://esm.sh/react-router@6.22.3",
-          "react-router-dom": "https://esm.sh/react-router-dom@6.22.3",
-          "@remix-run/router": "https://esm.sh/@remix-run/router@1.15.3",
-          "scheduler": "https://esm.sh/scheduler@0.23.0"
+          "react": "/node_modules/react/index.js",
+          "react-dom": "/node_modules/react-dom/index.js",
+          "react-dom/client": "/node_modules/react-dom/client.js",
+          "react-router": "/node_modules/react-router/dist/index.js",
+          "react-router-dom": "/node_modules/react-router-dom/dist/index.js",
+          "@remix-run/router": "/node_modules/@remix-run/router/dist/router.js",
+          "scheduler": "/node_modules/scheduler/index.js"
         }
       }
+    </script>
+    <!-- Production importmap -->
+    <script type="importmap" data-production>
+      {
+        "imports": {
+          "react": "https://ga.jspm.io/npm:react@18.2.0/index.js",
+          "react-dom": "https://ga.jspm.io/npm:react-dom@18.2.0/index.js",
+          "react-dom/client": "https://ga.jspm.io/npm:react-dom@18.2.0/client.js",
+          "react-router": "https://ga.jspm.io/npm:react-router@6.22.3/dist/index.js",
+          "react-router-dom": "https://ga.jspm.io/npm:react-router-dom@6.22.3/dist/index.js",
+          "@remix-run/router": "https://ga.jspm.io/npm:@remix-run/router@1.15.3/dist/router.js",
+          "scheduler": "https://ga.jspm.io/npm:scheduler@0.23.0/index.js"
+        }
+      }
+    </script>
+    <script>
+      // Select the appropriate importmap based on environment
+      const isDev = !window.location.href.includes('github.io');
+      const importmaps = document.querySelectorAll('script[type="importmap"]');
+      importmaps.forEach(map => {
+        if ((isDev && map.hasAttribute('data-development')) || 
+            (!isDev && map.hasAttribute('data-production'))) {
+          map.removeAttribute('data-development');
+          map.removeAttribute('data-production');
+        } else {
+          map.remove();
+        }
+      });
     </script>
     <style>
       body {
@@ -30,6 +59,16 @@
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Dynamically set the correct script source based on environment
+      const scriptSrc = !window.location.href.includes('github.io') 
+        ? '/src/main.tsx'
+        : '/webfragments-poc/assets/index.js';
+      
+      const script = document.createElement('script');
+      script.type = 'module';
+      script.src = scriptSrc;
+      document.body.appendChild(script);
+    </script>
   </body>
 </html> 

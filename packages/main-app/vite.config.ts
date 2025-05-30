@@ -37,9 +37,10 @@ export default defineConfig({
     exclude: [
       'react',
       'react-dom',
+      'react-dom/client',
+      'react-router',
       'react-router-dom',
       '@remix-run/router',
-      'react-router',
       'scheduler'
     ]
   },
@@ -49,9 +50,6 @@ export default defineConfig({
     }
   },
   build: {
-    commonjsOptions: {
-      include: [/@webfragments\/core/, /node_modules/]
-    },
     outDir: 'dist',
     emptyOutDir: true,
     rollupOptions: {
@@ -66,9 +64,10 @@ export default defineConfig({
       ],
       output: {
         format: 'esm',
-        entryFileNames: 'assets/[name]-[hash].js',
+        entryFileNames: 'assets/[name].js',
         chunkFileNames: 'assets/[name]-[hash].js',
-        assetFileNames: 'assets/[name]-[hash].[ext]'
+        assetFileNames: 'assets/[name]-[hash].[ext]',
+        manualChunks: undefined
       }
     }
   }
