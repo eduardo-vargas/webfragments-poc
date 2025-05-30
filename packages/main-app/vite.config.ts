@@ -36,25 +36,13 @@ export default defineConfig({
     }
   ],
   base: process.env.NODE_ENV === 'production' ? '/webfragments-poc/' : '/',
-  server: {
-    port: 3000,
-    open: true
-  },
-  css: {
-    modules: {
-      localsConvention: 'camelCase'
-    }
-  },
   build: {
     outDir: 'dist',
     emptyOutDir: true,
-    rollupOptions: {
-      output: {
-        format: 'esm',
-        entryFileNames: 'assets/[name].js',
-        chunkFileNames: 'assets/[name].js',
-        assetFileNames: 'assets/[name].[ext]'
-      }
-    }
+    sourcemap: true
+  },
+  server: {
+    port: 3000,
+    open: true
   }
 }); 
