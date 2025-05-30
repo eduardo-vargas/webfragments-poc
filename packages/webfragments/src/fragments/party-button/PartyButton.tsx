@@ -13,7 +13,8 @@ const styles = {
     border: 'none',
     borderRadius: '8px',
     cursor: 'pointer',
-    transition: 'all 0.2s ease'
+    transition: 'all 0.2s ease',
+    position: 'relative' as const
   }
 } as const;
 
@@ -24,22 +25,31 @@ const PartyButton: React.FC = () => {
     const button = event.currentTarget;
     const rect = button.getBoundingClientRect();
     
-    // Calculate the origin point relative to the viewport
-    const x = (rect.left + rect.width / 2) / window.innerWidth;
-    const y = (rect.top + rect.height / 2) / window.innerHeight;
+    // Get the shadow root and its host element
+    const shadowRoot = button.closest('web-fragment')?.shadowRoot;
+    const host = shadowRoot?.host;
     
-    console.log('[PartyButton] Click detected at position:', { x, y });
-    
-    confetti({
-      particleCount: 100,
-      spread: 70,
-      origin: { x, y },
-      startVelocity: 30,
-      gravity: 1.5,
-      ticks: 200,
-      shapes: ['square', 'circle'],
-      colors: ['#FF6633', '#FFA07A', '#FFD700', '#FF8C00']
-    });
+    if (host) {
+      // Get the host element's position
+      const hostRect = host.getBoundingClientRect();
+      
+      // Calculate the origin point relative to the viewport
+      const x = (hostRect.left + rect.width / 2) / window.innerWidth;
+      const y = (hostRect.top + rect.height / 2) / window.innerHeight;
+      
+      console.log('[PartyButton] Click detected at position:', { x, y });
+      
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { x, y },
+        startVelocity: 30,
+        gravity: 1.5,
+        ticks: 200,
+        shapes: ['square', 'circle'],
+        colors: ['#FF6633', '#FFA07A', '#FFD700', '#FF8C00']
+      });
+    }
   };
 
   return React.createElement('button', {

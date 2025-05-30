@@ -10,7 +10,7 @@ const gateway = new FragmentGateway();
 // Register our fragments with their full URLs
 gateway.registerFragment({
   fragmentId: 'party-button',
-  piercingClassNames: [],
+  piercingClassNames: ['party-button', 'confetti-piece'],
   endpoint: 'https://eduardo-vargas.github.io/webfragments-poc/fragments/party-button/demo/index.html',
   routePatterns: ['/fragment-demo']
 });
