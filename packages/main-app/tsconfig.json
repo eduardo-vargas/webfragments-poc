@@ -28,9 +28,7 @@
     
     /* Module Resolution */
     "baseUrl": ".",
-    "paths": {
-      "@webfragments/core/*": ["../webfragments/src/*"]
-    }
+    "paths": {}
   },
   "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }]
