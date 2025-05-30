@@ -48,14 +48,19 @@ export default defineConfig(({ mode }) => {
             'react-dom': 'ReactDOM'
           },
           entryFileNames: (chunkInfo) => {
-            // For demo entries, ensure we output as .js
+            // For demo entries, preserve the path structure
             if (chunkInfo.name.includes('/demo/')) {
-              const name = chunkInfo.name.replace('.tsx', '');
-              return `${name}.js`;
+              return '[name].js';
             }
             return '[name].js';
           },
-          assetFileNames: 'assets/[name]-[hash].[ext]',
+          assetFileNames: (assetInfo) => {
+            // Keep HTML files in their original path structure
+            if (assetInfo.name?.endsWith('.html')) {
+              return '[name].[ext]';
+            }
+            return 'assets/[name]-[hash].[ext]';
+          },
           chunkFileNames: 'chunks/[name]-[hash].js'
         }
       }
