@@ -19,6 +19,18 @@ export default defineConfig(({ mode }) => {
 
   return {
     base: baseUrl,
+    resolve: {
+      alias: [
+        {
+          find: /^\/webfragments-poc\/elements$/,
+          replacement: resolve(__dirname, 'src/elements.ts')
+        },
+        {
+          find: /^\/webfragments-poc\/fragments\/([^/]+)\/index$/,
+          replacement: resolve(__dirname, 'src/fragments/$1/index.ts')
+        }
+      ]
+    },
     plugins: [
       {
         name: 'html-transform',
