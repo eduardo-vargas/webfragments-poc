@@ -49,7 +49,7 @@ debug.log
 *.tsbuildinfo
 
 # Optional eslint cache
-.eslintcache
+.eslintcache 
 
 # Secrets and local config
 .secrets
