@@ -39,6 +39,7 @@ export default defineConfig({
     }
   ],
   base: process.env.NODE_ENV === 'production' ? '/webfragments-poc/' : '/',
+  publicDir: 'public',
   build: {
     outDir: 'dist',
     emptyOutDir: true,
